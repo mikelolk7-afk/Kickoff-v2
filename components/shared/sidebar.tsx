@@ -20,7 +20,6 @@ import {
   Bell,
   MessageSquare,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -83,7 +82,17 @@ export function Sidebar() {
 
         <div className="p-3 border-t border-gray-800">
           <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={async () => {
+              // Fetch CSRF token then sign out
+              const res = await fetch("/api/auth/csrf");
+              const { csrfToken } = await res.json();
+              await fetch("/api/auth/signout", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `csrfToken=${csrfToken}`,
+              });
+              window.location.href = "/login";
+            }}
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-gray-800/50 w-full transition-colors"
           >
             <LogOut size={18} />
