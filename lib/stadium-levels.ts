@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * Stadium visual levels 1-20.
  * Each level has a name, capacity, description, and visual properties

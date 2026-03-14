@@ -3,10 +3,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { Building, Clock, Wrench, ChevronLeft, ChevronRight, Zap, ArrowUp } from "lucide-react";
-import { useState, Suspense, lazy } from "react";
+import { useState } from "react";
+import dynamic from "next/dynamic";
 import { getStadiumLevel, STADIUM_LEVELS } from "@/lib/stadium-levels";
 
-const Stadium3D = lazy(() => import("@/components/shared/stadium-3d"));
+const Stadium3D = dynamic(() => import("@/components/shared/stadium-3d"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full aspect-[16/10] max-w-[720px] rounded-xl border border-gray-800 bg-[#0a0a0c] flex items-center justify-center">
+      <p className="text-gray-500 text-sm">Loading 3D stadium...</p>
+    </div>
+  ),
+});
 
 interface StadiumData {
   club: {
@@ -107,15 +115,7 @@ export default function StadiumPage() {
         </div>
 
         <div className="flex justify-center">
-          <Suspense
-            fallback={
-              <div className="w-full aspect-[16/10] max-w-[720px] rounded-xl border border-gray-800 bg-[#0a0a0c] flex items-center justify-center">
-                <p className="text-gray-500 text-sm">Loading 3D stadium...</p>
-              </div>
-            }
-          >
-            <Stadium3D level={displayLevel} />
-          </Suspense>
+          <Stadium3D level={displayLevel} />
         </div>
 
         {/* Level browser */}
