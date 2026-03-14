@@ -2,7 +2,10 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Building, Clock, Wrench } from "lucide-react";
+import { Building, Clock, Wrench, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import StadiumView from "@/components/shared/stadium-view";
+import { getStadiumLevel, STADIUM_LEVELS } from "@/lib/stadium-levels";
 
 interface StadiumData {
   club: {
@@ -32,6 +35,7 @@ interface StadiumData {
 
 export default function StadiumPage() {
   const queryClient = useQueryClient();
+  const [previewLevel, setPreviewLevel] = useState<number | null>(null);
 
   const { data, isLoading } = useQuery<StadiumData>({
     queryKey: ["stadium"],
@@ -62,6 +66,14 @@ export default function StadiumPage() {
 
   if (!data) return null;
 
+  const currentLevel = getStadiumLevel(data.club.stadiumCapacity);
+  const displayLevel = previewLevel !== null
+    ? STADIUM_LEVELS[previewLevel - 1]
+    : currentLevel;
+  const nextLevel = currentLevel.level < 20
+    ? STADIUM_LEVELS[currentLevel.level]
+    : null;
+
   const facilityLevels: Record<string, number> = {
     training: data.club.trainingLevel,
     medical: data.club.medicalLevel,
@@ -76,6 +88,91 @@ export default function StadiumPage() {
         <p className="text-gray-400 text-sm">
           Capacity: {data.club.stadiumCapacity.toLocaleString()} · Budget: €{data.club.budget.toLocaleString()}
         </p>
+      </div>
+
+      {/* Stadium Visualization */}
+      <div className="card">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-lg font-bold text-accent">{displayLevel.name}</h2>
+            <p className="text-sm text-gray-400">{displayLevel.description}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-primary">Lvl {displayLevel.level}</p>
+            <p className="text-xs text-gray-500">{displayLevel.capacity.toLocaleString()} seats</p>
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <StadiumView level={displayLevel} />
+        </div>
+
+        {/* Level browser */}
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <button
+            onClick={() => setPreviewLevel(Math.max(1, (previewLevel ?? currentLevel.level) - 1))}
+            disabled={(previewLevel ?? currentLevel.level) <= 1}
+            className="p-1 text-gray-400 hover:text-white disabled:opacity-20"
+          >
+            <ChevronLeft size={20} />
+          </button>
+
+          <div className="flex gap-1">
+            {STADIUM_LEVELS.map((sl) => (
+              <button
+                key={sl.level}
+                onClick={() => setPreviewLevel(sl.level === currentLevel.level ? null : sl.level)}
+                className={cn(
+                  "w-6 h-6 rounded text-xs font-bold transition-all",
+                  sl.level === currentLevel.level
+                    ? "bg-primary text-white ring-2 ring-primary/50"
+                    : sl.level === previewLevel
+                    ? "bg-accent/20 text-accent border border-accent/40"
+                    : sl.level <= currentLevel.level
+                    ? "bg-primary/20 text-primary"
+                    : "bg-gray-800 text-gray-600"
+                )}
+              >
+                {sl.level}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setPreviewLevel(Math.min(20, (previewLevel ?? currentLevel.level) + 1))}
+            disabled={(previewLevel ?? currentLevel.level) >= 20}
+            className="p-1 text-gray-400 hover:text-white disabled:opacity-20"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+
+        {previewLevel !== null && previewLevel !== currentLevel.level && (
+          <p className="text-center text-xs text-gray-500 mt-2">
+            Previewing Level {previewLevel} — your stadium is Level {currentLevel.level}
+          </p>
+        )}
+
+        {/* Progress to next level */}
+        {nextLevel && (
+          <div className="mt-4 p-3 bg-bg rounded-lg">
+            <div className="flex items-center justify-between text-sm mb-1">
+              <span className="text-gray-400">Next: {nextLevel.name}</span>
+              <span className="text-accent font-medium">{nextLevel.capacity.toLocaleString()} seats</span>
+            </div>
+            <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all"
+                style={{
+                  width: `${Math.min(100, ((data.club.stadiumCapacity - currentLevel.capacity) / (nextLevel.capacity - currentLevel.capacity)) * 100)}%`,
+                }}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {(nextLevel.capacity - data.club.stadiumCapacity).toLocaleString()} more seats needed
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Active Upgrades */}
