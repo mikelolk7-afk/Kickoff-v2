@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Environment, Float } from "@react-three/drei";
+import { OrbitControls, Float } from "@react-three/drei";
 import { useMemo } from "react";
 import type { StadiumLevel } from "@/lib/stadium-levels";
 
