@@ -60,7 +60,7 @@ export default function RegisterPage() {
         redirect: false,
       });
 
-      router.push("/dashboard");
+      router.push("/onboarding");
     } catch {
       setError("Something went wrong");
       setLoading(false);

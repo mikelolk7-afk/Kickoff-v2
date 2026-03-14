@@ -49,9 +49,9 @@ Home: #3a7bd5. Away: #d53a3a. BG: #0d0d0f. Panel: #13141a.
 Desktop: sidebar nav. Mobile: bottom tab bar.
 
 ## Current Phase
-Phase 3 — Competition & Social
-Active modules: All Phase 1 + Phase 2 + Cup, Continental Cup, Manager Profiles, Rivalries, Notifications, Chat.
-Do NOT build: Admin dashboard, Mobile polish, Onboarding, Multi-instance leagues, Performance tuning, Analytics.
+Phase 4+5 — Polish, Scale & Live Operations
+Active modules: All Phases 1-3 + Onboarding, Season Automation, Admin Dashboard, Moderation, Analytics.
+All features active.
 
 ## Cron Schedule
 simulate-matches:   20:00 UTC daily

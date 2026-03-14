@@ -18,12 +18,21 @@ model User {
   credits      Int      @default(0)
   coins        Int      @default(500)
   createdAt    DateTime @default(now())
+  role         String   @default("user")
+  isBanned     Boolean  @default(false)
+  banReason    String?
+  bannedUntil  DateTime?
   club         Club?
   transactions      Transaction[]
   managerProfile    ManagerProfile?
   notifications     Notification[]
   notificationPrefs NotificationPrefs?
   messages          Message[]
+  loginEvents       LoginEvent[]
+  analyticsEvents   AnalyticsEvent[]
+  moderationReports ModerationReport[] @relation("ReportedBy")
+  moderationTargets ModerationReport[] @relation("ReportedUser")
+  adminAuditLogs    AdminAuditLog[]
 }
 
 // ─── Club ─────────────────────────────────────────────────
@@ -552,4 +561,78 @@ model Message {
 
   @@index([roomId])
   @@index([roomId, createdAt])
+}
+
+// ─── Phase 5: Analytics ─────────────────────────────────
+
+model LoginEvent {
+  id        String   @id @default(uuid())
+  userId    String
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(uuid())
+  userId    String?
+  event     String
+  data      Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([event])
+  @@index([createdAt])
+  @@index([userId])
+}
+
+// ─── Phase 5: Moderation ────────────────────────────────
+
+model ModerationReport {
+  id           String           @id @default(uuid())
+  reportedById String
+  targetUserId String
+  reason       String
+  messageId    String?
+  status       ModerationStatus @default(PENDING)
+  resolution   String?
+  createdAt    DateTime         @default(now())
+  resolvedAt   DateTime?
+
+  reportedBy  User @relation("ReportedBy", fields: [reportedById], references: [id])
+  targetUser  User @relation("ReportedUser", fields: [targetUserId], references: [id])
+
+  @@index([status])
+  @@index([targetUserId])
+  @@index([createdAt])
+}
+
+enum ModerationStatus {
+  PENDING
+  REVIEWED
+  ACTION_TAKEN
+  DISMISSED
+}
+
+// ─── Phase 5: Admin Audit Log ───────────────────────────
+
+model AdminAuditLog {
+  id        String   @id @default(uuid())
+  adminId   String
+  action    String
+  target    String
+  detail    Json?
+  createdAt DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
 }

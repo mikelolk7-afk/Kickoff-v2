@@ -18,5 +18,7 @@ export const config = {
     "/notifications/:path*",
     "/chat/:path*",
     "/match/:path*",
+    "/admin/:path*",
+    "/onboarding/:path*",
   ],
 };
