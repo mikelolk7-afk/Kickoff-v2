@@ -49,9 +49,9 @@ Home: #3a7bd5. Away: #d53a3a. BG: #0d0d0f. Panel: #13141a.
 Desktop: sidebar nav. Mobile: bottom tab bar.
 
 ## Current Phase
-Phase 1 — Core Loop
-Active modules: Auth, Club Creation, Squad, Tactics, Match Engine, Match Replay, League Table, Dashboard.
-Do NOT build: Transfers, Scouting, Training, Stadium upgrades, Finances, Credits, Cup, Continental, Chat, Notifications, Admin.
+Phase 2 — Retention Layer
+Active modules: All Phase 1 + Transfers, Scouting, Training, Stadium/Facilities, Finances, Credits/Store.
+Do NOT build: Cup, Continental, Chat, Notifications, Manager Profiles, Rivalries, Admin, Mobile polish, Onboarding.
 
 ## Cron Schedule
 simulate-matches:   20:00 UTC daily

@@ -7,7 +7,12 @@ import {
   Users,
   Crosshair,
   Trophy,
-  PlayCircle,
+  ArrowRightLeft,
+  Search,
+  Dumbbell,
+  Building,
+  Wallet,
+  ShoppingBag,
   LogOut,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
@@ -17,6 +22,20 @@ const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/squad", label: "Squad", icon: Users },
   { href: "/tactics", label: "Tactics", icon: Crosshair },
+  { href: "/league", label: "League", icon: Trophy },
+  { href: "/transfers", label: "Transfers", icon: ArrowRightLeft },
+  { href: "/scouting", label: "Scouting", icon: Search },
+  { href: "/training", label: "Training", icon: Dumbbell },
+  { href: "/stadium", label: "Stadium", icon: Building },
+  { href: "/finances", label: "Finances", icon: Wallet },
+  { href: "/store", label: "Store", icon: ShoppingBag },
+];
+
+const MOBILE_NAV = [
+  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+  { href: "/squad", label: "Squad", icon: Users },
+  { href: "/tactics", label: "Tactics", icon: Crosshair },
+  { href: "/transfers", label: "Market", icon: ArrowRightLeft },
   { href: "/league", label: "League", icon: Trophy },
 ];
 
@@ -66,7 +85,7 @@ export function Sidebar() {
       {/* Mobile bottom tab bar */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-panel border-t border-gray-800 z-50">
         <div className="flex justify-around py-2">
-          {NAV_ITEMS.map((item) => {
+          {MOBILE_NAV.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (
               <Link

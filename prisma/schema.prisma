@@ -44,14 +44,19 @@ model Club {
   weeklyWages     Int      @default(0)
   createdAt       DateTime @default(now())
 
-  user         User?          @relation(fields: [userId], references: [id])
-  division     Division       @relation(fields: [divisionId], references: [id])
-  players      Player[]
-  homeFixtures Fixture[]      @relation("HomeClub")
-  awayFixtures Fixture[]      @relation("AwayClub")
-  tableRows    LeagueTableRow[]
-  tactics      Tactic[]
-  staff        Staff[]
+  user              User?              @relation(fields: [userId], references: [id])
+  division          Division           @relation(fields: [divisionId], references: [id])
+  players           Player[]
+  homeFixtures      Fixture[]          @relation("HomeClub")
+  awayFixtures      Fixture[]          @relation("AwayClub")
+  tableRows         LeagueTableRow[]
+  tactics           Tactic[]
+  staff             Staff[]
+  sellerListings    TransferListing[]  @relation("SellerListings")
+  buyerOffers       TransferOffer[]    @relation("BuyerOffers")
+  scoutAssignments  ScoutAssignment[]
+  stadiumUpgrades   StadiumUpgrade[]   @relation("StadiumUpgrades")
+  facilityUpgrades  FacilityUpgrade[]  @relation("FacilityUpgrades")
 
   @@index([divisionId])
 }
@@ -83,8 +88,9 @@ model Player {
   isYouth      Boolean   @default(false)
   createdAt    DateTime  @default(now())
 
-  club        Club         @relation(fields: [clubId], references: [id])
-  matchEvents MatchEvent[]
+  club             Club              @relation(fields: [clubId], references: [id])
+  matchEvents      MatchEvent[]
+  transferListings TransferListing[]
 
   @@index([clubId])
 }
@@ -236,7 +242,8 @@ model Staff {
   stars  Int
   wage   Int
 
-  club Club @relation(fields: [clubId], references: [id])
+  club             Club              @relation(fields: [clubId], references: [id])
+  scoutAssignments ScoutAssignment[] @relation("ScoutAssignments")
 
   @@index([clubId])
 }
@@ -256,4 +263,145 @@ model Transaction {
   user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+// ─── Phase 2: Transfer Market ─────────────────────────────
+
+model TransferListing {
+  id            String        @id @default(uuid())
+  playerId      String
+  sellerClubId  String
+  askingPrice   Int
+  listingType   ListingType   @default(SALE)
+  status        ListingStatus @default(ACTIVE)
+  expiresAt     DateTime
+  loanDuration  Int?
+  loanFee       Int?
+  wagePct       Int?
+  createdAt     DateTime      @default(now())
+
+  player     Player          @relation(fields: [playerId], references: [id])
+  sellerClub Club            @relation("SellerListings", fields: [sellerClubId], references: [id])
+  offers     TransferOffer[]
+
+  @@index([sellerClubId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+enum ListingType {
+  SALE
+  LOAN
+  AUCTION
+}
+
+enum ListingStatus {
+  ACTIVE
+  SOLD
+  EXPIRED
+  WITHDRAWN
+}
+
+model TransferOffer {
+  id          String      @id @default(uuid())
+  listingId   String
+  buyerClubId String
+  offerFee    Int
+  offerWage   Int
+  isLoan      Boolean     @default(false)
+  status      OfferStatus @default(PENDING)
+  counterFee  Int?
+  expiresAt   DateTime
+  createdAt   DateTime    @default(now())
+
+  listing   TransferListing @relation(fields: [listingId], references: [id])
+  buyerClub Club            @relation("BuyerOffers", fields: [buyerClubId], references: [id])
+
+  @@index([listingId])
+  @@index([buyerClubId])
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COUNTERED
+  EXPIRED
+  WITHDRAWN
+}
+
+// ─── Phase 2: Scouting ────────────────────────────────────
+
+model ScoutAssignment {
+  id          String             @id @default(uuid())
+  clubId      String
+  scoutId     String
+  region      String
+  duration    Int
+  status      ScoutStatus        @default(IN_PROGRESS)
+  startedAt   DateTime           @default(now())
+  completesAt DateTime
+  report      ScoutReport?
+
+  club  Club  @relation(fields: [clubId], references: [id])
+  scout Staff @relation("ScoutAssignments", fields: [scoutId], references: [id])
+
+  @@index([clubId])
+  @@index([completesAt])
+}
+
+enum ScoutStatus {
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model ScoutReport {
+  id           String @id @default(uuid())
+  assignmentId String @unique
+  players      Json
+
+  assignment ScoutAssignment @relation(fields: [assignmentId], references: [id])
+}
+
+// ─── Phase 2: Stadium & Facility Upgrades ─────────────────
+
+model StadiumUpgrade {
+  id          String        @id @default(uuid())
+  clubId      String
+  stand       String
+  fromLevel   Int
+  toLevel     Int
+  status      UpgradeStatus @default(IN_PROGRESS)
+  startedAt   DateTime      @default(now())
+  completesAt DateTime
+  cost        Int
+
+  club Club @relation("StadiumUpgrades", fields: [clubId], references: [id])
+
+  @@index([clubId])
+  @@index([completesAt])
+}
+
+model FacilityUpgrade {
+  id          String        @id @default(uuid())
+  clubId      String
+  facility    String
+  fromLevel   Int
+  toLevel     Int
+  status      UpgradeStatus @default(IN_PROGRESS)
+  startedAt   DateTime      @default(now())
+  completesAt DateTime
+  cost        Int
+
+  club Club @relation("FacilityUpgrades", fields: [clubId], references: [id])
+
+  @@index([clubId])
+  @@index([completesAt])
+}
+
+enum UpgradeStatus {
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }
