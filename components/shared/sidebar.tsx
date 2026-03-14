@@ -14,6 +14,11 @@ import {
   Wallet,
   ShoppingBag,
   LogOut,
+  Award,
+  Globe,
+  User,
+  Bell,
+  MessageSquare,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
@@ -29,6 +34,11 @@ const NAV_ITEMS = [
   { href: "/stadium", label: "Stadium", icon: Building },
   { href: "/finances", label: "Finances", icon: Wallet },
   { href: "/store", label: "Store", icon: ShoppingBag },
+  { href: "/cup", label: "Cup", icon: Award },
+  { href: "/continental", label: "Continental", icon: Globe },
+  { href: "/manager", label: "Profile", icon: User },
+  { href: "/notifications", label: "Notifications", icon: Bell },
+  { href: "/chat", label: "Chat", icon: MessageSquare },
 ];
 
 const MOBILE_NAV = [

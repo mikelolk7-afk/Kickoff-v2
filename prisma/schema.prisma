@@ -18,7 +18,11 @@ model User {
   coins        Int      @default(500)
   createdAt    DateTime @default(now())
   club         Club?
-  transactions Transaction[]
+  transactions      Transaction[]
+  managerProfile    ManagerProfile?
+  notifications     Notification[]
+  notificationPrefs NotificationPrefs?
+  messages          Message[]
 }
 
 // ─── Club ─────────────────────────────────────────────────
@@ -57,6 +61,11 @@ model Club {
   scoutAssignments  ScoutAssignment[]
   stadiumUpgrades   StadiumUpgrade[]   @relation("StadiumUpgrades")
   facilityUpgrades  FacilityUpgrade[]  @relation("FacilityUpgrades")
+  homeCupFixtures   CupFixture[]       @relation("CupHomeClub")
+  awayCupFixtures   CupFixture[]       @relation("CupAwayClub")
+  wonCupFixtures    CupFixture[]       @relation("CupWinner")
+  rivalriesA        Rivalry[]          @relation("RivalryA")
+  rivalriesB        Rivalry[]          @relation("RivalryB")
 
   @@index([divisionId])
 }
@@ -404,4 +413,142 @@ enum UpgradeStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+// ─── Phase 3: Cup Competition ────────────────────────────
+
+model Cup {
+  id        String     @id @default(uuid())
+  seasonNum Int
+  isActive  Boolean    @default(true)
+  rounds    CupRound[]
+}
+
+model CupRound {
+  id       String       @id @default(uuid())
+  cupId    String
+  roundNum Int
+  name     String
+  fixtures CupFixture[]
+
+  cup Cup @relation(fields: [cupId], references: [id])
+
+  @@index([cupId])
+}
+
+model CupFixture {
+  id          String        @id @default(uuid())
+  roundId     String
+  homeClubId  String
+  awayClubId  String
+  scheduledAt DateTime
+  homeScore   Int?
+  awayScore   Int?
+  winnerId    String?
+  status      FixtureStatus @default(SCHEDULED)
+
+  round    CupRound @relation(fields: [roundId], references: [id])
+  homeClub Club     @relation("CupHomeClub", fields: [homeClubId], references: [id])
+  awayClub Club     @relation("CupAwayClub", fields: [awayClubId], references: [id])
+  winner   Club?    @relation("CupWinner", fields: [winnerId], references: [id])
+
+  @@index([roundId])
+  @@index([homeClubId])
+  @@index([awayClubId])
+}
+
+// ─── Phase 3: Manager Profiles ───────────────────────────
+
+model ManagerProfile {
+  id          String @id @default(uuid())
+  userId      String @unique
+  reputation  Int    @default(50)
+  level       Int    @default(1)
+  xp          Int    @default(0)
+  totalWins   Int    @default(0)
+  totalDraws  Int    @default(0)
+  totalLosses Int    @default(0)
+  trophies    Json   @default("[]")
+  history     Json   @default("[]")
+  badges      Json   @default("[]")
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+// ─── Phase 3: Rivalries ──────────────────────────────────
+
+model Rivalry {
+  id        String   @id @default(uuid())
+  clubAId   String
+  clubBId   String
+  intensity Int      @default(1)
+  createdAt DateTime @default(now())
+
+  clubA Club @relation("RivalryA", fields: [clubAId], references: [id])
+  clubB Club @relation("RivalryB", fields: [clubBId], references: [id])
+
+  @@unique([clubAId, clubBId])
+  @@index([clubAId])
+  @@index([clubBId])
+}
+
+// ─── Phase 3: Notifications ──────────────────────────────
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  data      Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([userId, isRead])
+}
+
+model NotificationPrefs {
+  userId       String  @id
+  matchResults Boolean @default(true)
+  transfers    Boolean @default(true)
+  scouting     Boolean @default(true)
+  upgrades     Boolean @default(false)
+  cup          Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+// ─── Phase 3: Chat ───────────────────────────────────────
+
+model ChatRoom {
+  id       String    @id @default(uuid())
+  type     RoomType
+  refId    String?
+  messages Message[]
+
+  @@index([type, refId])
+}
+
+enum RoomType {
+  DIVISION
+  GLOBAL
+  DIRECT
+  MATCH
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  roomId    String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+
+  room ChatRoom @relation(fields: [roomId], references: [id])
+  user User     @relation(fields: [userId], references: [id])
+
+  @@index([roomId])
+  @@index([roomId, createdAt])
 }

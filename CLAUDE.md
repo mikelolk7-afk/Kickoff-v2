@@ -49,9 +49,9 @@ Home: #3a7bd5. Away: #d53a3a. BG: #0d0d0f. Panel: #13141a.
 Desktop: sidebar nav. Mobile: bottom tab bar.
 
 ## Current Phase
-Phase 2 — Retention Layer
-Active modules: All Phase 1 + Transfers, Scouting, Training, Stadium/Facilities, Finances, Credits/Store.
-Do NOT build: Cup, Continental, Chat, Notifications, Manager Profiles, Rivalries, Admin, Mobile polish, Onboarding.
+Phase 3 — Competition & Social
+Active modules: All Phase 1 + Phase 2 + Cup, Continental Cup, Manager Profiles, Rivalries, Notifications, Chat.
+Do NOT build: Admin dashboard, Mobile polish, Onboarding, Multi-instance leagues, Performance tuning, Analytics.
 
 ## Cron Schedule
 simulate-matches:   20:00 UTC daily
