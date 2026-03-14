@@ -137,8 +137,8 @@ export async function POST(req: Request) {
           penalties: result.penalties,
           homePenScore: result.homePenScore ?? null,
           awayPenScore: result.awayPenScore ?? null,
-          playerRatings: result.playerRatings as Record<string, unknown>,
-          heatMapData: result.heatMap as Record<string, unknown>,
+          playerRatings: JSON.parse(JSON.stringify(result.playerRatings)),
+          heatMapData: JSON.parse(JSON.stringify(result.heatMap)),
         },
       });
 

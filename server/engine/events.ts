@@ -881,7 +881,7 @@ export function generateMatchEvents(config: EventGenConfig): MatchResult {
 
   // ─── Build heat map data ───────────────────────────────────
   const heatMap: Record<string, Array<{ minute: number; x: number; y: number }>> = {};
-  for (const [playerId, tracker] of playerTrackers) {
+  for (const [playerId, tracker] of Array.from(playerTrackers.entries())) {
     if (tracker.positions.length > 0) {
       heatMap[playerId] = tracker.positions;
     }
