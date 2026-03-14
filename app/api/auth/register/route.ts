@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { hash } from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -27,6 +28,7 @@ export async function POST(req: Request) {
       );
     }
 
+    const { hash } = await import("bcryptjs");
     const passwordHash = await hash(data.password, 12);
 
     // Find the lowest division with fewer than 10 clubs

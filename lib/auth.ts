@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { compare } from "bcryptjs";
 import { db } from "@/lib/db";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -28,6 +27,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        const { compare } = await import("bcryptjs");
         const isValid = await compare(password, user.passwordHash);
         if (!isValid) {
           return null;
