@@ -18,5 +18,9 @@ export async function GET(
     return NextResponse.json({ error: "Match not found" }, { status: 404 });
   }
 
-  return NextResponse.json(fixture);
+  return NextResponse.json({
+    ...fixture,
+    playerRatings: fixture.playerRatings ?? null,
+    heatMapData: fixture.heatMapData ?? null,
+  });
 }

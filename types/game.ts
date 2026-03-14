@@ -16,7 +16,23 @@ export interface MatchResult {
   awayPossession: number;
   homeShots: number;
   awayShots: number;
+  homeShotsOnTarget: number;
+  awayShotsOnTarget: number;
+  homeFouls: number;
+  awayFouls: number;
+  homeCorners: number;
+  awayCorners: number;
+  homeYellows: number;
+  awayYellows: number;
+  homeReds: number;
+  awayReds: number;
   events: MatchEventData[];
+  playerRatings: Record<string, PlayerMatchRating>;
+  heatMap: Record<string, Array<{ minute: number; x: number; y: number }>>;
+  extraTime: boolean;
+  penalties: boolean;
+  homePenScore?: number;
+  awayPenScore?: number;
 }
 
 export interface MatchEventData {
@@ -25,9 +41,29 @@ export interface MatchEventData {
   team: "home" | "away";
   playerId?: string;
   playerName?: string;
+  assistId?: string;
+  assistName?: string;
   detail?: string;
   xPos?: number;
   yPos?: number;
+}
+
+export interface PlayerMatchRating {
+  playerId: string;
+  playerName: string;
+  team: "home" | "away";
+  position: string;
+  rating: number; // 1.0 - 10.0
+  goals: number;
+  assists: number;
+  shotsOnTarget: number;
+  shotsOff: number;
+  tackles: number;
+  fouls: number;
+  saves: number;
+  minutesPlayed: number;
+  substitutedOff?: number; // minute subbed off
+  substitutedOn?: number;  // minute subbed on
 }
 
 export interface TacticsMultipliers {
@@ -41,6 +77,22 @@ export const MENTALITY_MULTIPLIERS: Record<number, TacticsMultipliers> = {
   3: { attack: 1.00, defence: 1.00 },
   4: { attack: 1.10, defence: 0.92 },
   5: { attack: 1.22, defence: 0.80 },
+};
+
+/**
+ * Formation definitions: number of DEF, MID, FWD.
+ * Affects team ratings via position count bonuses.
+ */
+export const FORMATIONS: Record<string, { def: number; mid: number; fwd: number }> = {
+  "4-4-2": { def: 4, mid: 4, fwd: 2 },
+  "4-3-3": { def: 4, mid: 3, fwd: 3 },
+  "3-5-2": { def: 3, mid: 5, fwd: 2 },
+  "4-5-1": { def: 4, mid: 5, fwd: 1 },
+  "3-4-3": { def: 3, mid: 4, fwd: 3 },
+  "5-3-2": { def: 5, mid: 3, fwd: 2 },
+  "5-4-1": { def: 5, mid: 4, fwd: 1 },
+  "4-2-3-1": { def: 4, mid: 5, fwd: 1 },
+  "4-1-4-1": { def: 4, mid: 5, fwd: 1 },
 };
 
 export interface PlayerAttributes {

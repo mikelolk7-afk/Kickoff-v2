@@ -7,7 +7,13 @@ interface SimulateMatchInput {
   awayPlayers: PlayerAttributes[];
   homeMentality: number;
   awayMentality: number;
+  homeFormation?: string;
+  awayFormation?: string;
+  homeSubs?: PlayerAttributes[];
+  awaySubs?: PlayerAttributes[];
   fixtureId: string;
+  /** If true, allows extra time + penalties when drawn (cup/continental). */
+  isCupMatch?: boolean;
 }
 
 /**
@@ -20,12 +26,17 @@ export function simulateMatch(input: SimulateMatchInput): MatchResult {
     awayPlayers,
     homeMentality,
     awayMentality,
+    homeFormation,
+    awayFormation,
+    homeSubs = [],
+    awaySubs = [],
     fixtureId,
+    isCupMatch = false,
   } = input;
 
-  // Calculate team ratings
-  const homeRatings = calcTeamRatings(homePlayers, homeMentality);
-  const awayRatings = calcTeamRatings(awayPlayers, awayMentality);
+  // Calculate team ratings with formation effects
+  const homeRatings = calcTeamRatings(homePlayers, homeMentality, homeFormation);
+  const awayRatings = calcTeamRatings(awayPlayers, awayMentality, awayFormation);
 
   // Generate a seed from fixtureId for deterministic results
   let seed = 0;
@@ -33,32 +44,29 @@ export function simulateMatch(input: SimulateMatchInput): MatchResult {
     seed = ((seed << 5) - seed + fixtureId.charCodeAt(i)) | 0;
   }
 
-  // Generate events
-  const result = generateMatchEvents({
+  function toPlayerInfo(p: PlayerAttributes) {
+    return {
+      id: p.id,
+      name: p.name,
+      position: p.position,
+      overall: p.overall,
+      shooting: p.shooting,
+      composure: p.composure,
+    };
+  }
+
+  return generateMatchEvents({
     homeRatings,
     awayRatings,
-    homePlayers: homePlayers.map((p) => ({
-      id: p.id,
-      name: p.name,
-      position: p.position,
-    })),
-    awayPlayers: awayPlayers.map((p) => ({
-      id: p.id,
-      name: p.name,
-      position: p.position,
-    })),
+    homePlayers: homePlayers.map(toPlayerInfo),
+    awayPlayers: awayPlayers.map(toPlayerInfo),
+    homeSubs: homeSubs.map(toPlayerInfo),
+    awaySubs: awaySubs.map(toPlayerInfo),
     seed: Math.abs(seed),
+    isCupMatch,
+    homeFormation,
+    awayFormation,
   });
-
-  return {
-    homeScore: result.homeScore,
-    awayScore: result.awayScore,
-    homePossession: result.homePossession,
-    awayPossession: 100 - result.homePossession,
-    homeShots: result.homeShots,
-    awayShots: result.awayShots,
-    events: result.events,
-  };
 }
 
 /**

@@ -1,4 +1,4 @@
-import { MENTALITY_MULTIPLIERS, type PlayerAttributes, type TeamRatings, type TacticsMultipliers } from "@/types/game";
+import { MENTALITY_MULTIPLIERS, FORMATIONS, type PlayerAttributes, type TeamRatings, type TacticsMultipliers } from "@/types/game";
 
 /**
  * Calculate weighted average of an attribute across a list of players.
@@ -48,8 +48,33 @@ export function getTacticsMultipliers(mentality: number): TacticsMultipliers {
 }
 
 /**
+ * Formation multiplier: how well the squad fits the chosen formation.
+ * Having the right number of players per position gives a bonus.
+ */
+export function getFormationMultiplier(
+  players: PlayerAttributes[],
+  formation: string
+): { attackMult: number; defenceMult: number; midfieldMult: number } {
+  const f = FORMATIONS[formation] ?? FORMATIONS["4-4-2"];
+  const defs = players.filter((p) => p.position === "DEF").length;
+  const mids = players.filter((p) => p.position === "MID").length;
+  const fwds = players.filter((p) => p.position === "FWD").length;
+
+  // Bonus/penalty based on how many players match formation slots
+  // More forwards than formation = attack boost, defence penalty
+  const fwdDiff = fwds - f.fwd;
+  const defDiff = defs - f.def;
+  const midDiff = mids - f.mid;
+
+  return {
+    attackMult: 1.0 + fwdDiff * 0.03 + Math.max(0, midDiff) * 0.01,
+    defenceMult: 1.0 + defDiff * 0.03 + Math.max(0, midDiff) * 0.01,
+    midfieldMult: 1.0 + midDiff * 0.02,
+  };
+}
+
+/**
  * Calculate attack rating for a team.
- * Uses FWD weighted stats + MID contribution * 0.5.
  */
 export function calcAttackRating(
   forwards: PlayerAttributes[],
@@ -77,7 +102,6 @@ export function calcAttackRating(
 
 /**
  * Calculate defence rating for a team.
- * Uses DEF weighted stats + GK contribution.
  */
 export function calcDefenceRating(
   defenders: PlayerAttributes[],
@@ -98,11 +122,12 @@ export function calcDefenceRating(
 }
 
 /**
- * Calculate full team ratings from a squad + active tactic.
+ * Calculate full team ratings from a squad + active tactic + formation.
  */
 export function calcTeamRatings(
   players: PlayerAttributes[],
-  mentality: number
+  mentality: number,
+  formation?: string
 ): TeamRatings {
   const gk = players.find((p) => p.position === "GK") ?? null;
   const defs = players.filter((p) => p.position === "DEF");
@@ -113,14 +138,18 @@ export function calcTeamRatings(
   const mMult = moraleMult(players);
   const fMult = formMult(players);
 
-  const attack = calcAttackRating(fwds, mids, tactics.attack, mMult, fMult);
-  const defence = calcDefenceRating(defs, gk, tactics.defence, mMult);
+  const formMults = formation
+    ? getFormationMultiplier(players, formation)
+    : { attackMult: 1.0, defenceMult: 1.0, midfieldMult: 1.0 };
+
+  const attack = calcAttackRating(fwds, mids, tactics.attack, mMult, fMult) * formMults.attackMult;
+  const defence = calcDefenceRating(defs, gk, tactics.defence, mMult) * formMults.defenceMult;
   const midfield = weightedAvg(mids, {
     passing: 0.35,
     dribbling: 0.25,
     composure: 0.20,
     positioning: 0.20,
-  });
+  }) * formMults.midfieldMult;
   const overall = (attack + defence + midfield) / 3;
 
   return { attack, defence, midfield, overall };

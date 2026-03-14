@@ -82,17 +82,36 @@ export async function POST(req: Request) {
       continue;
     }
 
+    const homeFormation = fixture.homeClub.tactics[0]?.formation ?? "4-4-2";
+    const awayFormation = fixture.awayClub.tactics[0]?.formation ?? "4-4-2";
+
+    // Split players into starters (first 11) and subs
+    const homeStarters = homePlayers.slice(0, 11);
+    const homeSubs = homePlayers.slice(11);
+    const awayStarters = awayPlayers.slice(0, 11);
+    const awaySubs = awayPlayers.slice(11);
+
+    // Mark fixture as LIVE before simulation
+    await db.fixture.update({
+      where: { id: fixture.id },
+      data: { status: "LIVE" },
+    });
+
     const result = simulateMatch({
-      homePlayers,
-      awayPlayers,
+      homePlayers: homeStarters,
+      awayPlayers: awayStarters,
+      homeSubs,
+      awaySubs,
       homeMentality,
       awayMentality,
+      homeFormation,
+      awayFormation,
       fixtureId: fixture.id,
     });
 
     // Save results in a transaction
     await db.$transaction(async (tx) => {
-      // Update fixture
+      // Update fixture with all enhanced stats
       await tx.fixture.update({
         where: { id: fixture.id },
         data: {
@@ -104,6 +123,22 @@ export async function POST(req: Request) {
           awayPoss: result.awayPossession,
           homeShots: result.homeShots,
           awayShots: result.awayShots,
+          homeShotsOnTarget: result.homeShotsOnTarget,
+          awayShotsOnTarget: result.awayShotsOnTarget,
+          homeFouls: result.homeFouls,
+          awayFouls: result.awayFouls,
+          homeCorners: result.homeCorners,
+          awayCorners: result.awayCorners,
+          homeYellows: result.homeYellows,
+          awayYellows: result.awayYellows,
+          homeReds: result.homeReds,
+          awayReds: result.awayReds,
+          extraTime: result.extraTime,
+          penalties: result.penalties,
+          homePenScore: result.homePenScore ?? null,
+          awayPenScore: result.awayPenScore ?? null,
+          playerRatings: result.playerRatings as Record<string, unknown>,
+          heatMapData: result.heatMap as Record<string, unknown>,
         },
       });
 
@@ -116,6 +151,8 @@ export async function POST(req: Request) {
             type: e.type,
             team: e.team,
             playerId: e.playerId ?? null,
+            assistId: e.assistId ?? null,
+            assistName: e.assistName ?? null,
             detail: e.detail ?? null,
             xPos: e.xPos ?? null,
             yPos: e.yPos ?? null,

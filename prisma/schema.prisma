@@ -161,6 +161,22 @@ model Fixture {
   awayPoss    Int?
   homeShots   Int?
   awayShots   Int?
+  homeShotsOnTarget Int?
+  awayShotsOnTarget Int?
+  homeFouls   Int?
+  awayFouls   Int?
+  homeCorners Int?
+  awayCorners Int?
+  homeYellows Int?
+  awayYellows Int?
+  homeReds    Int?
+  awayReds    Int?
+  extraTime   Boolean       @default(false)
+  penalties   Boolean       @default(false)
+  homePenScore Int?
+  awayPenScore Int?
+  playerRatings Json?
+  heatMapData   Json?
 
   season   Season       @relation(fields: [seasonId], references: [id])
   homeClub Club         @relation("HomeClub", fields: [homeClubId], references: [id])
@@ -180,15 +196,17 @@ enum FixtureStatus {
 }
 
 model MatchEvent {
-  id        String    @id @default(uuid())
-  fixtureId String
-  minute    Int
-  type      EventType
-  team      String
-  playerId  String?
-  detail    String?
-  xPos      Float?
-  yPos      Float?
+  id           String    @id @default(uuid())
+  fixtureId    String
+  minute       Int
+  type         EventType
+  team         String
+  playerId     String?
+  assistId     String?
+  assistName   String?
+  detail       String?
+  xPos         Float?
+  yPos         Float?
 
   fixture Fixture @relation(fields: [fixtureId], references: [id])
   player  Player? @relation(fields: [playerId], references: [id])
@@ -209,6 +227,13 @@ enum EventType {
   KICKOFF
   HALFTIME
   FULLTIME
+  CORNER
+  FREE_KICK
+  PENALTY_GOAL
+  PENALTY_MISS
+  EXTRA_TIME_START
+  PENALTY_SHOOTOUT_START
+  SECOND_YELLOW
 }
 
 // ─── Tactics ──────────────────────────────────────────────
