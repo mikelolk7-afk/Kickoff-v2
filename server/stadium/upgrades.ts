@@ -1,24 +1,14 @@
 import { db } from "@/lib/db";
+import { STADIUM_LEVELS, getStadiumLevel } from "@/lib/stadium-levels";
 
 /**
- * Stadium & facility upgrade definitions from blueprint:
+ * Simplified stadium upgrade system.
  *
- * Upgrade        | Levels | Effect                        | Time/Level
- * Main Stand     | 5      | +1,000 capacity/level         | 24h
- * North Stand    | 5      | +800 capacity/level           | 18h
- * East Stand     | 5      | +800 capacity/level           | 18h
- * West Stand     | 5      | +600 capacity/level           | 12h
- * Training Ground| 5      | +5% development speed/level   | 36h
- * Medical Centre | 5      | -15% injury duration/level    | 24h
- * Youth Academy  | 5      | Better youth intake quality   | 48h
- * Analytics Centre| 3     | +1 star to all staff          | 72h
+ * - 20 stadium levels, each with a fixed capacity.
+ * - Upgrade to next level: flat 24-hour build time.
+ * - Instant build available for credits (scales with level).
+ * - Facilities remain unchanged.
  */
-
-interface StandConfig {
-  capacityPerLevel: number;
-  hoursPerLevel: number;
-  baseCost: number;
-}
 
 interface FacilityConfig {
   hoursPerLevel: number;
@@ -27,13 +17,6 @@ interface FacilityConfig {
   clubField: string;
 }
 
-const STANDS: Record<string, StandConfig> = {
-  main: { capacityPerLevel: 1000, hoursPerLevel: 24, baseCost: 100000 },
-  north: { capacityPerLevel: 800, hoursPerLevel: 18, baseCost: 80000 },
-  east: { capacityPerLevel: 800, hoursPerLevel: 18, baseCost: 80000 },
-  west: { capacityPerLevel: 600, hoursPerLevel: 12, baseCost: 60000 },
-};
-
 const FACILITIES: Record<string, FacilityConfig> = {
   training: { hoursPerLevel: 36, baseCost: 150000, maxLevel: 5, clubField: "trainingLevel" },
   medical: { hoursPerLevel: 24, baseCost: 120000, maxLevel: 5, clubField: "medicalLevel" },
@@ -41,42 +24,53 @@ const FACILITIES: Record<string, FacilityConfig> = {
   analytics: { hoursPerLevel: 72, baseCost: 300000, maxLevel: 3, clubField: "analyticsLevel" },
 };
 
-/**
- * Start a stadium stand upgrade.
- */
-export async function startStadiumUpgrade(clubId: string, stand: string) {
-  const config = STANDS[stand];
-  if (!config) throw new Error("Invalid stand");
+const BUILD_HOURS = 24;
 
+/**
+ * Cost to upgrade from current level to next level (coins/budget).
+ * Scales exponentially: 50k * nextLevel^1.4
+ */
+export function getUpgradeCost(nextLevel: number): number {
+  return Math.round(50000 * Math.pow(nextLevel, 1.4));
+}
+
+/**
+ * Credit cost for instant build. Scales with target level.
+ */
+export function getInstantBuildCost(nextLevel: number): number {
+  return 5 + nextLevel * 5; // Level 2 = 15, Level 10 = 55, Level 20 = 105
+}
+
+/**
+ * Start a stadium level upgrade (24h build time).
+ */
+export async function startStadiumUpgrade(clubId: string) {
   const club = await db.club.findUnique({ where: { id: clubId } });
   if (!club) throw new Error("Club not found");
 
-  // Check for in-progress upgrades on this stand
+  // Check for in-progress stadium upgrade
   const inProgress = await db.stadiumUpgrade.findFirst({
-    where: { clubId, stand, status: "IN_PROGRESS" },
+    where: { clubId, stand: "stadium", status: "IN_PROGRESS" },
   });
-  if (inProgress) throw new Error("Upgrade already in progress for this stand");
+  if (inProgress) throw new Error("Stadium upgrade already in progress");
 
-  // Determine current level from past upgrades
-  const completedUpgrades = await db.stadiumUpgrade.count({
-    where: { clubId, stand, status: "COMPLETED" },
-  });
-  const currentLevel = completedUpgrades;
-  if (currentLevel >= 5) throw new Error("Stand already at max level");
+  const current = getStadiumLevel(club.stadiumCapacity);
+  if (current.level >= 20) throw new Error("Stadium already at max level");
 
-  const cost = config.baseCost * (currentLevel + 1);
+  const nextLevel = current.level + 1;
+  const cost = getUpgradeCost(nextLevel);
   if (club.budget < cost) throw new Error("Insufficient budget");
 
   const completesAt = new Date();
-  completesAt.setHours(completesAt.getHours() + config.hoursPerLevel);
+  completesAt.setHours(completesAt.getHours() + BUILD_HOURS);
 
   const [upgrade] = await db.$transaction([
     db.stadiumUpgrade.create({
       data: {
         clubId,
-        stand,
-        fromLevel: currentLevel,
-        toLevel: currentLevel + 1,
+        stand: "stadium",
+        fromLevel: current.level,
+        toLevel: nextLevel,
         cost,
         completesAt,
       },
@@ -88,6 +82,125 @@ export async function startStadiumUpgrade(clubId: string, stand: string) {
   ]);
 
   return upgrade;
+}
+
+/**
+ * Instant-build a stadium upgrade using credits.
+ * Pays the coin cost AND the credit cost, but skips the wait.
+ */
+export async function instantStadiumUpgrade(
+  clubId: string,
+  userId: string
+) {
+  const club = await db.club.findUnique({ where: { id: clubId } });
+  if (!club) throw new Error("Club not found");
+
+  // Check for in-progress stadium upgrade
+  const inProgress = await db.stadiumUpgrade.findFirst({
+    where: { clubId, stand: "stadium", status: "IN_PROGRESS" },
+  });
+  if (inProgress) throw new Error("Stadium upgrade already in progress");
+
+  const current = getStadiumLevel(club.stadiumCapacity);
+  if (current.level >= 20) throw new Error("Stadium already at max level");
+
+  const nextLevel = current.level + 1;
+  const nextLevelData = STADIUM_LEVELS[nextLevel - 1];
+  const coinCost = getUpgradeCost(nextLevel);
+  const creditCost = getInstantBuildCost(nextLevel);
+
+  if (club.budget < coinCost) throw new Error("Insufficient budget");
+
+  const user = await db.user.findUnique({ where: { id: userId } });
+  if (!user || user.credits < creditCost) throw new Error("Insufficient credits");
+
+  // Instant: create upgrade already COMPLETED, apply capacity immediately
+  const [upgrade] = await db.$transaction([
+    db.stadiumUpgrade.create({
+      data: {
+        clubId,
+        stand: "stadium",
+        fromLevel: current.level,
+        toLevel: nextLevel,
+        cost: coinCost,
+        completesAt: new Date(), // already done
+        status: "COMPLETED",
+      },
+    }),
+    db.club.update({
+      where: { id: clubId },
+      data: {
+        budget: { decrement: coinCost },
+        stadiumCapacity: nextLevelData.capacity,
+      },
+    }),
+    db.user.update({
+      where: { id: userId },
+      data: { credits: { decrement: creditCost } },
+    }),
+    db.transaction.create({
+      data: {
+        userId,
+        type: "INSTANT_BUILD",
+        credits: -creditCost,
+        description: `Instant stadium upgrade to Level ${nextLevel}`,
+      },
+    }),
+  ]);
+
+  return { upgrade, creditCost };
+}
+
+/**
+ * Speed up an in-progress stadium upgrade (completes it instantly).
+ */
+export async function speedUpStadiumUpgrade(
+  upgradeId: string,
+  clubId: string,
+  userId: string
+) {
+  const upgrade = await db.stadiumUpgrade.findUnique({
+    where: { id: upgradeId },
+  });
+
+  if (!upgrade) throw new Error("Upgrade not found");
+  if (upgrade.clubId !== clubId) throw new Error("Not your upgrade");
+  if (upgrade.status !== "IN_PROGRESS") throw new Error("Upgrade not in progress");
+
+  const hoursLeft = Math.ceil(
+    (upgrade.completesAt.getTime() - Date.now()) / (1000 * 60 * 60)
+  );
+  const creditCost = Math.max(1, hoursLeft * 10);
+
+  const user = await db.user.findUnique({ where: { id: userId } });
+  if (!user || user.credits < creditCost) throw new Error("Insufficient credits");
+
+  const nextLevelData = STADIUM_LEVELS[upgrade.toLevel - 1];
+
+  await db.$transaction([
+    db.stadiumUpgrade.update({
+      where: { id: upgradeId },
+      data: { completesAt: new Date(), status: "COMPLETED" },
+    }),
+    db.club.update({
+      where: { id: clubId },
+      data: { stadiumCapacity: nextLevelData.capacity },
+    }),
+    db.user.update({
+      where: { id: userId },
+      data: { credits: { decrement: creditCost } },
+    }),
+    db.transaction.create({
+      data: {
+        userId,
+        type: "SPEED_UP",
+        credits: -creditCost,
+        description: `Speed up stadium upgrade to Level ${upgrade.toLevel}`,
+      },
+    }),
+  ]);
+
+  return { creditCost };
 }
 
 /**
@@ -146,8 +259,8 @@ export async function processCompletedUpgrades() {
   });
 
   for (const upgrade of stadiumDone) {
-    const config = STANDS[upgrade.stand];
-    if (!config) continue;
+    const nextLevelData = STADIUM_LEVELS[upgrade.toLevel - 1];
+    if (!nextLevelData) continue;
 
     await db.$transaction([
       db.stadiumUpgrade.update({
@@ -156,9 +269,7 @@ export async function processCompletedUpgrades() {
       }),
       db.club.update({
         where: { id: upgrade.clubId },
-        data: {
-          stadiumCapacity: { increment: config.capacityPerLevel },
-        },
+        data: { stadiumCapacity: nextLevelData.capacity },
       }),
     ]);
     completed++;
@@ -191,51 +302,4 @@ export async function processCompletedUpgrades() {
   return completed;
 }
 
-/**
- * Speed up an upgrade with credits.
- * Costs 10 credits per hour remaining.
- */
-export async function speedUpStadiumUpgrade(
-  upgradeId: string,
-  clubId: string,
-  userId: string
-) {
-  const upgrade = await db.stadiumUpgrade.findUnique({
-    where: { id: upgradeId },
-  });
-
-  if (!upgrade) throw new Error("Upgrade not found");
-  if (upgrade.clubId !== clubId) throw new Error("Not your upgrade");
-  if (upgrade.status !== "IN_PROGRESS") throw new Error("Upgrade not in progress");
-
-  const hoursLeft = Math.ceil(
-    (upgrade.completesAt.getTime() - Date.now()) / (1000 * 60 * 60)
-  );
-  const creditCost = Math.max(1, hoursLeft * 10);
-
-  const user = await db.user.findUnique({ where: { id: userId } });
-  if (!user || user.credits < creditCost) throw new Error("Insufficient credits");
-
-  await db.$transaction([
-    db.stadiumUpgrade.update({
-      where: { id: upgradeId },
-      data: { completesAt: new Date() }, // Complete immediately
-    }),
-    db.user.update({
-      where: { id: userId },
-      data: { credits: { decrement: creditCost } },
-    }),
-    db.transaction.create({
-      data: {
-        userId,
-        type: "SPEED_UP",
-        credits: -creditCost,
-        description: `Speed up ${upgrade.stand} stand upgrade`,
-      },
-    }),
-  ]);
-
-  return { creditCost };
-}
-
-export { STANDS, FACILITIES };
+export { FACILITIES };

@@ -2,34 +2,35 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Building, Clock, Wrench, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
-import StadiumView from "@/components/shared/stadium-view";
+import { Building, Clock, Wrench, ChevronLeft, ChevronRight, Zap, ArrowUp } from "lucide-react";
+import { useState, Suspense, lazy } from "react";
 import { getStadiumLevel, STADIUM_LEVELS } from "@/lib/stadium-levels";
+
+const Stadium3D = lazy(() => import("@/components/shared/stadium-3d"));
 
 interface StadiumData {
   club: {
     stadiumCapacity: number;
+    stadiumLevel: number;
     trainingLevel: number;
     medicalLevel: number;
     academyLevel: number;
     analyticsLevel: number;
     budget: number;
   };
-  standLevels: Record<string, number>;
-  stadiumUpgrades: Array<{
+  stadiumUpgrade: {
     id: string;
-    stand: string;
     toLevel: number;
     completesAt: string;
-  }>;
+  } | null;
   facilityUpgrades: Array<{
     id: string;
     facility: string;
     toLevel: number;
     completesAt: string;
   }>;
-  stands: Record<string, { capacityPerLevel: number; hoursPerLevel: number; baseCost: number }>;
+  upgradeCost: number | null;
+  instantBuildCost: number | null;
   facilities: Record<string, { hoursPerLevel: number; baseCost: number; maxLevel: number; clubField: string }>;
 }
 
@@ -42,7 +43,7 @@ export default function StadiumPage() {
     queryFn: () => fetch("/api/stadium").then((r) => r.json()),
   });
 
-  const upgrade = useMutation({
+  const action = useMutation({
     mutationFn: async (body: Record<string, string>) => {
       const res = await fetch("/api/stadium", {
         method: "POST",
@@ -73,6 +74,8 @@ export default function StadiumPage() {
   const nextLevel = currentLevel.level < 20
     ? STADIUM_LEVELS[currentLevel.level]
     : null;
+  const isMaxed = currentLevel.level >= 20;
+  const isUpgrading = !!data.stadiumUpgrade;
 
   const facilityLevels: Record<string, number> = {
     training: data.club.trainingLevel,
@@ -90,7 +93,7 @@ export default function StadiumPage() {
         </p>
       </div>
 
-      {/* Stadium Visualization */}
+      {/* Stadium 3D Visualization */}
       <div className="card">
         <div className="flex items-center justify-between mb-3">
           <div>
@@ -104,7 +107,15 @@ export default function StadiumPage() {
         </div>
 
         <div className="flex justify-center">
-          <StadiumView level={displayLevel} />
+          <Suspense
+            fallback={
+              <div className="w-full aspect-[16/10] max-w-[720px] rounded-xl border border-gray-800 bg-[#0a0a0c] flex items-center justify-center">
+                <p className="text-gray-500 text-sm">Loading 3D stadium...</p>
+              </div>
+            }
+          >
+            <Stadium3D level={displayLevel} />
+          </Suspense>
         </div>
 
         {/* Level browser */}
@@ -117,7 +128,7 @@ export default function StadiumPage() {
             <ChevronLeft size={20} />
           </button>
 
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap justify-center">
             {STADIUM_LEVELS.map((sl) => (
               <button
                 key={sl.level}
@@ -152,47 +163,129 @@ export default function StadiumPage() {
             Previewing Level {previewLevel} — your stadium is Level {currentLevel.level}
           </p>
         )}
+      </div>
 
-        {/* Progress to next level */}
-        {nextLevel && (
-          <div className="mt-4 p-3 bg-bg rounded-lg">
-            <div className="flex items-center justify-between text-sm mb-1">
-              <span className="text-gray-400">Next: {nextLevel.name}</span>
-              <span className="text-accent font-medium">{nextLevel.capacity.toLocaleString()} seats</span>
+      {/* Stadium Upgrade Card */}
+      <div className="card">
+        <h2 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
+          <Building size={14} /> Stadium Upgrade
+        </h2>
+
+        {isUpgrading && data.stadiumUpgrade ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">
+                Upgrading to Level {data.stadiumUpgrade.toLevel}
+              </p>
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <Clock size={12} />
+                {Math.max(
+                  0,
+                  Math.ceil(
+                    (new Date(data.stadiumUpgrade.completesAt).getTime() - Date.now()) / 3600000
+                  )
+                )}h remaining
+              </div>
             </div>
             <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-primary rounded-full transition-all"
+                className="h-full bg-accent rounded-full transition-all animate-pulse"
                 style={{
-                  width: `${Math.min(100, ((data.club.stadiumCapacity - currentLevel.capacity) / (nextLevel.capacity - currentLevel.capacity)) * 100)}%`,
+                  width: `${Math.max(
+                    5,
+                    100 -
+                      ((new Date(data.stadiumUpgrade.completesAt).getTime() - Date.now()) /
+                        (24 * 3600000)) *
+                        100
+                  )}%`,
                 }}
               />
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {(nextLevel.capacity - data.club.stadiumCapacity).toLocaleString()} more seats needed
+            <button
+              onClick={() =>
+                action.mutate({ action: "speedup", upgradeId: data.stadiumUpgrade!.id })
+              }
+              disabled={action.isPending}
+              className="btn-accent text-xs w-full flex items-center justify-center gap-1"
+            >
+              <Zap size={12} /> Complete Now (Credits)
+            </button>
+          </div>
+        ) : isMaxed ? (
+          <div className="text-center py-4">
+            <p className="text-accent font-bold text-lg">Max Level Reached</p>
+            <p className="text-xs text-gray-500">
+              {currentLevel.name} — {currentLevel.capacity.toLocaleString()} seats
             </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {nextLevel && (
+              <div className="flex items-center justify-between p-3 bg-bg rounded-lg">
+                <div>
+                  <p className="text-sm font-medium">
+                    Level {currentLevel.level} → {nextLevel.level}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {currentLevel.name} → {nextLevel.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {currentLevel.capacity.toLocaleString()} → {nextLevel.capacity.toLocaleString()} seats
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-2">
+              {/* Normal upgrade — 24h */}
+              <button
+                onClick={() => action.mutate({ action: "upgrade" })}
+                disabled={
+                  action.isPending ||
+                  !data.upgradeCost ||
+                  data.club.budget < data.upgradeCost
+                }
+                className="btn-primary text-xs flex flex-col items-center gap-1 py-3 disabled:opacity-40"
+              >
+                <ArrowUp size={14} />
+                <span>Upgrade (24h)</span>
+                <span className="text-[10px] opacity-70">
+                  €{data.upgradeCost ? (data.upgradeCost / 1000).toFixed(0) + "k" : "—"}
+                </span>
+              </button>
+
+              {/* Instant build */}
+              <button
+                onClick={() => action.mutate({ action: "instant" })}
+                disabled={
+                  action.isPending ||
+                  !data.upgradeCost ||
+                  data.club.budget < data.upgradeCost
+                }
+                className="btn-accent text-xs flex flex-col items-center gap-1 py-3 disabled:opacity-40"
+              >
+                <Zap size={14} />
+                <span>Instant Build</span>
+                <span className="text-[10px] opacity-70">
+                  €{data.upgradeCost ? (data.upgradeCost / 1000).toFixed(0) + "k" : "—"} +{" "}
+                  {data.instantBuildCost ?? "—"} credits
+                </span>
+              </button>
+            </div>
+
+            {action.isError && (
+              <p className="text-xs text-red-400 text-center">{action.error.message}</p>
+            )}
           </div>
         )}
       </div>
 
-      {/* Active Upgrades */}
-      {(data.stadiumUpgrades.length > 0 || data.facilityUpgrades.length > 0) && (
+      {/* Active Facility Upgrades */}
+      {data.facilityUpgrades.length > 0 && (
         <div className="space-y-2">
           <h2 className="text-sm font-medium text-gray-400 flex items-center gap-2">
             <Clock size={14} /> In Progress
           </h2>
-          {data.stadiumUpgrades.map((u) => {
-            const hours = Math.max(0, Math.ceil((new Date(u.completesAt).getTime() - Date.now()) / 3600000));
-            return (
-              <div key={u.id} className="card flex items-center gap-3">
-                <Building size={16} className="text-accent" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium capitalize">{u.stand} Stand → Level {u.toLevel}</p>
-                  <p className="text-xs text-gray-500">{hours}h remaining</p>
-                </div>
-              </div>
-            );
-          })}
           {data.facilityUpgrades.map((u) => {
             const hours = Math.max(0, Math.ceil((new Date(u.completesAt).getTime() - Date.now()) / 3600000));
             return (
@@ -208,58 +301,15 @@ export default function StadiumPage() {
         </div>
       )}
 
-      {/* Stands */}
-      <div>
-        <h2 className="text-sm font-medium text-gray-400 mb-2">Stadium Stands</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {Object.entries(data.stands).map(([stand, config]) => {
-            const level = data.standLevels[stand] ?? 0;
-            const isMaxed = level >= 5;
-            const cost = config.baseCost * (level + 1);
-            const isUpgrading = data.stadiumUpgrades.some((u) => u.stand === stand);
-
-            return (
-              <div key={stand} className="card">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium capitalize">{stand} Stand</h3>
-                  <span className="text-sm text-gray-400">Level {level}/5</span>
-                </div>
-                <div className="flex gap-1 mb-3">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "h-2 flex-1 rounded",
-                        i < level ? "bg-primary" : "bg-gray-800"
-                      )}
-                    />
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500 mb-2">
-                  +{config.capacityPerLevel} capacity/level · {config.hoursPerLevel}h build time
-                </p>
-                <button
-                  onClick={() => upgrade.mutate({ stand })}
-                  disabled={isMaxed || isUpgrading || data.club.budget < cost}
-                  className="btn-primary text-xs w-full disabled:opacity-40"
-                >
-                  {isMaxed ? "Max Level" : isUpgrading ? "Upgrading..." : `Upgrade — €${(cost / 1000).toFixed(0)}k`}
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Facilities */}
       <div>
         <h2 className="text-sm font-medium text-gray-400 mb-2">Facilities</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {Object.entries(data.facilities).map(([facility, config]) => {
             const level = facilityLevels[facility] ?? 0;
-            const isMaxed = level >= config.maxLevel;
+            const isFacilityMaxed = level >= config.maxLevel;
             const cost = config.baseCost * (level + 1);
-            const isUpgrading = data.facilityUpgrades.some((u) => u.facility === facility);
+            const isFacilityUpgrading = data.facilityUpgrades.some((u) => u.facility === facility);
 
             return (
               <div key={facility} className="card">
@@ -280,11 +330,15 @@ export default function StadiumPage() {
                 </div>
                 <p className="text-xs text-gray-500 mb-2">{config.hoursPerLevel}h build time</p>
                 <button
-                  onClick={() => upgrade.mutate({ type: "facility", facility })}
-                  disabled={isMaxed || isUpgrading || data.club.budget < cost}
+                  onClick={() => action.mutate({ action: "facility", facility })}
+                  disabled={isFacilityMaxed || isFacilityUpgrading || data.club.budget < cost}
                   className="btn-primary text-xs w-full disabled:opacity-40"
                 >
-                  {isMaxed ? "Max Level" : isUpgrading ? "Upgrading..." : `Upgrade — €${(cost / 1000).toFixed(0)}k`}
+                  {isFacilityMaxed
+                    ? "Max Level"
+                    : isFacilityUpgrading
+                    ? "Upgrading..."
+                    : `Upgrade — €${(cost / 1000).toFixed(0)}k`}
                 </button>
               </div>
             );
