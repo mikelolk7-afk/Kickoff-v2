@@ -376,9 +376,10 @@ export default function Stadium3D({ level }: Stadium3DProps) {
         }}
         shadows
       >
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[5, 8, 5]} intensity={0.6} />
-        <directionalLight position={[-3, 6, -3]} intensity={0.3} color="#b0c4ff" />
+        <ambientLight intensity={1.2} />
+        <hemisphereLight args={["#b0c4ff", "#1a3a1a", 0.8]} />
+        <directionalLight position={[5, 8, 5]} intensity={1.5} />
+        <directionalLight position={[-3, 6, -3]} intensity={0.8} color="#b0c4ff" />
 
         <StadiumModel level={level} />
 
