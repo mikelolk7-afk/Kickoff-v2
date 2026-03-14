@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth & User ──────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String?
+  name         String?
+  credits      Int      @default(0)
+  coins        Int      @default(500)
+  createdAt    DateTime @default(now())
+  club         Club?
+  transactions Transaction[]
+}
+
+// ─── Club ─────────────────────────────────────────────────
+
+model Club {
+  id              String   @id @default(uuid())
+  userId          String?  @unique
+  name            String
+  badgeId         String
+  kitHome         String
+  kitAway         String
+  isAi            Boolean  @default(false)
+  aiLevel         Int      @default(1)
+  divisionId      String
+  reputation      Int      @default(50)
+  stadiumCapacity Int      @default(5000)
+  trainingLevel   Int      @default(1)
+  medicalLevel    Int      @default(1)
+  academyLevel    Int      @default(1)
+  analyticsLevel  Int      @default(0)
+  budget          Int      @default(500000)
+  wageBudget      Int      @default(50000)
+  weeklyWages     Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  user         User?          @relation(fields: [userId], references: [id])
+  division     Division       @relation(fields: [divisionId], references: [id])
+  players      Player[]
+  homeFixtures Fixture[]      @relation("HomeClub")
+  awayFixtures Fixture[]      @relation("AwayClub")
+  tableRows    LeagueTableRow[]
+  tactics      Tactic[]
+  staff        Staff[]
+
+  @@index([divisionId])
+}
+
+// ─── Player ───────────────────────────────────────────────
+
+model Player {
+  id           String    @id @default(uuid())
+  clubId       String
+  name         String
+  nationality  String
+  age          Int
+  position     Position
+  pace         Int
+  shooting     Int
+  passing      Int
+  dribbling    Int
+  defending    Int
+  physicality  Int
+  composure    Int
+  positioning  Int
+  overall      Int
+  potential    Int
+  morale       Int       @default(70)
+  form         Int       @default(70)
+  injuredUntil DateTime?
+  wage         Int
+  contractEnd  DateTime
+  isYouth      Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+
+  club        Club         @relation(fields: [clubId], references: [id])
+  matchEvents MatchEvent[]
+
+  @@index([clubId])
+}
+
+enum Position {
+  GK
+  DEF
+  MID
+  FWD
+}
+
+// ─── Division & Season ────────────────────────────────────
+
+model Division {
+  id      String   @id @default(uuid())
+  tier    Int      @unique
+  name    String
+  clubs   Club[]
+  seasons Season[]
+}
+
+model Season {
+  id         String   @id @default(uuid())
+  divisionId String
+  number     Int
+  startDate  DateTime
+  endDate    DateTime?
+  isActive   Boolean  @default(true)
+
+  division  Division         @relation(fields: [divisionId], references: [id])
+  fixtures  Fixture[]
+  tableRows LeagueTableRow[]
+}
+
+// ─── Fixtures & Match Events ──────────────────────────────
+
+model Fixture {
+  id          String        @id @default(uuid())
+  seasonId    String
+  homeClubId  String
+  awayClubId  String
+  matchWeek   Int           @default(1)
+  scheduledAt DateTime
+  playedAt    DateTime?
+  homeScore   Int?
+  awayScore   Int?
+  status      FixtureStatus @default(SCHEDULED)
+  homePoss    Int?
+  awayPoss    Int?
+  homeShots   Int?
+  awayShots   Int?
+
+  season   Season       @relation(fields: [seasonId], references: [id])
+  homeClub Club         @relation("HomeClub", fields: [homeClubId], references: [id])
+  awayClub Club         @relation("AwayClub", fields: [awayClubId], references: [id])
+  events   MatchEvent[]
+
+  @@index([seasonId])
+  @@index([homeClubId])
+  @@index([awayClubId])
+}
+
+enum FixtureStatus {
+  SCHEDULED
+  LIVE
+  COMPLETED
+  POSTPONED
+}
+
+model MatchEvent {
+  id        String    @id @default(uuid())
+  fixtureId String
+  minute    Int
+  type      EventType
+  team      String
+  playerId  String?
+  detail    String?
+  xPos      Float?
+  yPos      Float?
+
+  fixture Fixture @relation(fields: [fixtureId], references: [id])
+  player  Player? @relation(fields: [playerId], references: [id])
+
+  @@index([fixtureId])
+}
+
+enum EventType {
+  GOAL
+  SHOT_ON
+  SHOT_OFF
+  SAVE
+  TACKLE
+  FOUL
+  YELLOW_CARD
+  RED_CARD
+  SUBSTITUTION
+  KICKOFF
+  HALFTIME
+  FULLTIME
+}
+
+// ─── Tactics ──────────────────────────────────────────────
+
+model Tactic {
+  id            String   @id @default(uuid())
+  clubId        String
+  name          String
+  formation     String
+  mentality     Int
+  pressingLevel Int
+  positions     Json
+  setPieces     Json
+  isActive      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  club Club @relation(fields: [clubId], references: [id])
+
+  @@index([clubId])
+}
+
+// ─── League Table ─────────────────────────────────────────
+
+model LeagueTableRow {
+  id           String @id @default(uuid())
+  seasonId     String
+  clubId       String
+  played       Int    @default(0)
+  won          Int    @default(0)
+  drawn        Int    @default(0)
+  lost         Int    @default(0)
+  goalsFor     Int    @default(0)
+  goalsAgainst Int    @default(0)
+  points       Int    @default(0)
+
+  season Season @relation(fields: [seasonId], references: [id])
+  club   Club   @relation(fields: [clubId], references: [id])
+
+  @@unique([seasonId, clubId])
+  @@index([seasonId])
+}
+
+// ─── Staff ────────────────────────────────────────────────
+
+model Staff {
+  id     String @id @default(uuid())
+  clubId String
+  name   String
+  role   String
+  stars  Int
+  wage   Int
+
+  club Club @relation(fields: [clubId], references: [id])
+
+  @@index([clubId])
+}
+
+// ─── Transactions ─────────────────────────────────────────
+
+model Transaction {
+  id          String   @id @default(uuid())
+  userId      String
+  type        String
+  credits     Int      @default(0)
+  coins       Int      @default(0)
+  description String
+  stripeId    String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
