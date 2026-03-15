@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -202,6 +202,125 @@ function StatBar({ value, max = 100, color }: { value: number; max?: number; col
   );
 }
 
+// ─── Kit Colors ──────────────────────────────────────────────
+
+const KIT_COLORS = [
+  { name: "Red", value: "#e63946" },
+  { name: "Blue", value: "#457b9d" },
+  { name: "Green", value: "#2a9d8f" },
+  { name: "Yellow", value: "#e9c46a" },
+  { name: "Orange", value: "#f4a261" },
+  { name: "Navy", value: "#264653" },
+  { name: "Purple", value: "#6a0572" },
+  { name: "Forest", value: "#1a7a3c" },
+  { name: "Crimson", value: "#d53a3a" },
+  { name: "Sky", value: "#3a7bd5" },
+  { name: "White", value: "#f1faee" },
+  { name: "Black", value: "#1d1d1d" },
+];
+
+// ─── No Club State ──────────────────────────────────────────
+
+function NoClubState({ errorMessage }: { errorMessage?: string }) {
+  const queryClient = useQueryClient();
+  const [clubName, setClubName] = useState("");
+  const [kitHome, setKitHome] = useState("#e63946");
+  const [kitAway, setKitAway] = useState("#f1faee");
+
+  const createClub = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/club/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clubName, kitHome, kitAway }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error ?? "Failed to create club");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+
+  return (
+    <div className="max-w-lg mx-auto py-12">
+      <div className="card text-center">
+        <div className="text-5xl mb-4">&#9917;</div>
+        <h2 className="text-2xl font-bold mb-2">Create Your Club</h2>
+        <p className="text-muted text-sm mb-6">
+          {errorMessage === "No club found"
+            ? "You don't have a club yet. Set one up to start playing!"
+            : errorMessage ?? "Set up your club to get started."}
+        </p>
+
+        <div className="space-y-4 text-left">
+          <div>
+            <label className="block text-sm text-foreground mb-1">Club Name</label>
+            <input
+              type="text"
+              value={clubName}
+              onChange={(e) => setClubName(e.target.value)}
+              className="input-field"
+              placeholder="e.g. Ironclad FC"
+              maxLength={30}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-foreground mb-2">Home Kit</label>
+            <div className="grid grid-cols-6 gap-2">
+              {KIT_COLORS.map((c) => (
+                <button
+                  key={`home-${c.value}`}
+                  type="button"
+                  onClick={() => setKitHome(c.value)}
+                  className={cn(
+                    "w-10 h-10 rounded-lg border-2 transition-all",
+                    kitHome === c.value ? "border-accent scale-110" : "border-border"
+                  )}
+                  style={{ backgroundColor: c.value }}
+                  title={c.name}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm text-foreground mb-2">Away Kit</label>
+            <div className="grid grid-cols-6 gap-2">
+              {KIT_COLORS.map((c) => (
+                <button
+                  key={`away-${c.value}`}
+                  type="button"
+                  onClick={() => setKitAway(c.value)}
+                  className={cn(
+                    "w-10 h-10 rounded-lg border-2 transition-all",
+                    kitAway === c.value ? "border-accent scale-110" : "border-border"
+                  )}
+                  style={{ backgroundColor: c.value }}
+                  title={c.name}
+                />
+              ))}
+            </div>
+          </div>
+
+          {createClub.isError && (
+            <p className="text-sm text-red-400 text-center">{createClub.error.message}</p>
+          )}
+
+          <button
+            onClick={() => createClub.mutate()}
+            disabled={!clubName || clubName.length < 2 || createClub.isPending}
+            className="btn-primary w-full disabled:opacity-50"
+          >
+            {createClub.isPending ? "Creating..." : "Create Club & Start Playing"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main ───────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -228,15 +347,7 @@ export default function DashboardPage() {
   }
 
   if (error || !data?.club) {
-    return (
-      <div className="text-center py-20 space-y-3">
-        <AlertTriangle size={32} className="mx-auto text-muted" />
-        <p className="text-muted">{error?.message ?? "No club found. Please register first."}</p>
-        <Link href="/onboarding" className="btn-primary inline-block">
-          Create Club
-        </Link>
-      </div>
-    );
+    return <NoClubState errorMessage={error?.message} />;
   }
 
   const { club, division, squad, transfers, facilities } = data;
