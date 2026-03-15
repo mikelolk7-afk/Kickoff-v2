@@ -64,13 +64,13 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+    @apply bg-primary text-white font-semibold py-2 px-4 rounded-lg transition-colors hover:opacity-90;
   }
   .btn-secondary {
     @apply bg-panel hover:bg-surface-hover text-foreground font-semibold py-2 px-4 rounded-lg border border-border transition-colors;
   }
   .btn-accent {
-    @apply bg-accent hover:bg-accent/90 text-gray-900 font-semibold py-2 px-4 rounded-lg transition-colors;
+    @apply bg-accent text-gray-900 font-semibold py-2 px-4 rounded-lg transition-colors hover:opacity-90;
   }
   .card {
     @apply bg-panel rounded-xl border border-border p-4;
