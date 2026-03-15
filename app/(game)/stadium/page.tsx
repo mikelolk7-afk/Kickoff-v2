@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Building, Clock, Wrench, ChevronLeft, ChevronRight, Zap, ArrowUp } from "lucide-react";
+import { Building, Clock, Wrench, ChevronLeft, ChevronRight, Zap, ArrowUp, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { getStadiumLevel, STADIUM_LEVELS } from "@/lib/stadium-levels";
@@ -45,6 +45,7 @@ interface StadiumData {
 export default function StadiumPage() {
   const queryClient = useQueryClient();
   const [previewLevel, setPreviewLevel] = useState<number | null>(null);
+  const [stadiumTheme, setStadiumTheme] = useState<"dark" | "light">("dark");
 
   const { data, isLoading } = useQuery<StadiumData>({
     queryKey: ["stadium"],
@@ -108,14 +109,23 @@ export default function StadiumPage() {
             <h2 className="text-lg font-bold text-accent">{displayLevel.name}</h2>
             <p className="text-sm text-gray-400">{displayLevel.description}</p>
           </div>
-          <div className="text-right">
-            <p className="text-2xl font-bold text-primary">Lvl {displayLevel.level}</p>
-            <p className="text-xs text-gray-500">{displayLevel.capacity.toLocaleString()} seats</p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setStadiumTheme(stadiumTheme === "dark" ? "light" : "dark")}
+              className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+              title={stadiumTheme === "dark" ? "Switch to day view" : "Switch to night view"}
+            >
+              {stadiumTheme === "dark" ? <Sun size={16} className="text-yellow-400" /> : <Moon size={16} className="text-blue-300" />}
+            </button>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-primary">Lvl {displayLevel.level}</p>
+              <p className="text-xs text-gray-500">{displayLevel.capacity.toLocaleString()} seats</p>
+            </div>
           </div>
         </div>
 
         <div className="flex justify-center">
-          <Stadium3D level={displayLevel} />
+          <Stadium3D level={displayLevel} theme={stadiumTheme} />
         </div>
 
         {/* Level browser */}
