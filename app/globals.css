@@ -2,9 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Theme CSS variables.
+ * Light is the :root default; .dark overrides for dark mode.
+ * Tailwind config maps these via var(--color-*).
+ */
+
+:root {
+  /* Surfaces */
+  --color-bg: #f5f6fa;
+  --color-panel: #ffffff;
+  --color-surface: #eef0f4;
+  --color-surface-hover: #e4e7ec;
+
+  /* Text */
+  --color-foreground: #111827;
+  --color-muted: #6b7280;
+  --color-subtle: #9ca3af;
+
+  /* Borders */
+  --color-border: #d1d5db;
+  --color-border-light: #e5e7eb;
+
+  /* Input */
+  --color-input-bg: #ffffff;
+  --color-input-border: #d1d5db;
+
+  /* Brand (unchanged between themes) */
+  --color-primary: #1a7a3c;
+  --color-accent: #f0c040;
+  --color-home: #3a7bd5;
+  --color-away: #d53a3a;
+}
+
+.dark {
+  /* Surfaces */
+  --color-bg: #0d0d0f;
+  --color-panel: #13141a;
+  --color-surface: #1a1b22;
+  --color-surface-hover: #22232c;
+
+  /* Text */
+  --color-foreground: #f3f4f6;
+  --color-muted: #9ca3af;
+  --color-subtle: #6b7280;
+
+  /* Borders */
+  --color-border: #2a2b35;
+  --color-border-light: #1f2029;
+
+  /* Input */
+  --color-input-bg: #0d0d0f;
+  --color-input-border: #2a2b35;
+}
+
 @layer base {
   body {
-    @apply bg-bg text-gray-100 antialiased;
+    @apply bg-bg text-foreground antialiased;
   }
 }
 
@@ -13,12 +67,15 @@
     @apply bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-lg transition-colors;
   }
   .btn-secondary {
-    @apply bg-panel hover:bg-panel/80 text-gray-200 font-semibold py-2 px-4 rounded-lg border border-gray-700 transition-colors;
+    @apply bg-panel hover:bg-surface-hover text-foreground font-semibold py-2 px-4 rounded-lg border border-border transition-colors;
+  }
+  .btn-accent {
+    @apply bg-accent hover:bg-accent/90 text-gray-900 font-semibold py-2 px-4 rounded-lg transition-colors;
   }
   .card {
-    @apply bg-panel rounded-xl border border-gray-800 p-4;
+    @apply bg-panel rounded-xl border border-border p-4;
   }
   .input-field {
-    @apply bg-bg border border-gray-700 rounded-lg px-3 py-2 text-gray-100 placeholder-gray-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none w-full;
+    @apply bg-input-bg border border-input-border rounded-lg px-3 py-2 text-foreground placeholder-subtle focus:border-primary focus:ring-1 focus:ring-primary outline-none w-full;
   }
 }

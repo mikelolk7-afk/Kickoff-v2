@@ -71,7 +71,7 @@ export default function RegisterPage() {
     <div className="card">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-primary">Kickoff Manager</h1>
-        <p className="text-gray-400 mt-2">Create your club</p>
+        <p className="text-muted mt-2">Create your club</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -84,7 +84,7 @@ export default function RegisterPage() {
         {step === 1 && (
           <>
             <div>
-              <label className="block text-sm text-gray-300 mb-1">
+              <label className="block text-sm text-foreground mb-1">
                 Manager Name
               </label>
               <input
@@ -97,7 +97,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-300 mb-1">Email</label>
+              <label className="block text-sm text-foreground mb-1">Email</label>
               <input
                 type="email"
                 value={email}
@@ -107,7 +107,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-300 mb-1">
+              <label className="block text-sm text-foreground mb-1">
                 Password
               </label>
               <input
@@ -134,7 +134,7 @@ export default function RegisterPage() {
         {step === 2 && (
           <>
             <div>
-              <label className="block text-sm text-gray-300 mb-1">
+              <label className="block text-sm text-foreground mb-1">
                 Club Name
               </label>
               <input
@@ -149,7 +149,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-300 mb-2">
+              <label className="block text-sm text-foreground mb-2">
                 Home Kit Colour
               </label>
               <div className="grid grid-cols-6 gap-2">
@@ -161,7 +161,7 @@ export default function RegisterPage() {
                     className={`w-10 h-10 rounded-lg border-2 transition-all ${
                       kitHome === c.value
                         ? "border-accent scale-110"
-                        : "border-gray-700"
+                        : "border-border"
                     }`}
                     style={{ backgroundColor: c.value }}
                     title={c.name}
@@ -171,7 +171,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-300 mb-2">
+              <label className="block text-sm text-foreground mb-2">
                 Away Kit Colour
               </label>
               <div className="grid grid-cols-6 gap-2">
@@ -183,7 +183,7 @@ export default function RegisterPage() {
                     className={`w-10 h-10 rounded-lg border-2 transition-all ${
                       kitAway === c.value
                         ? "border-accent scale-110"
-                        : "border-gray-700"
+                        : "border-border"
                     }`}
                     style={{ backgroundColor: c.value }}
                     title={c.name}
@@ -212,7 +212,7 @@ export default function RegisterPage() {
         )}
       </form>
 
-      <p className="text-center text-gray-400 text-sm mt-6">
+      <p className="text-center text-muted text-sm mt-6">
         Already have an account?{" "}
         <Link href="/login" className="text-primary hover:underline">
           Sign in

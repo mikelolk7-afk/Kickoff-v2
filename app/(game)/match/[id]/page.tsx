@@ -225,7 +225,7 @@ function PitchViewer({
       ref={canvasRef}
       width={600}
       height={400}
-      className="w-full max-w-[600px] rounded-lg border border-gray-800"
+      className="w-full max-w-[600px] rounded-lg border border-border"
     />
   );
 }
@@ -271,21 +271,21 @@ function PlayerRatingsPanel({
           isSelected && "bg-white/10 ring-1 ring-primary"
         )}
       >
-        <span className="text-xs text-gray-500 w-8">{r.position}</span>
-        <span className="flex-1 text-gray-300 truncate">
+        <span className="text-xs text-subtle w-8">{r.position}</span>
+        <span className="flex-1 text-foreground truncate">
           {r.playerName}
           {r.substitutedOn !== undefined && (
-            <span className="text-gray-600 text-xs ml-1">
+            <span className="text-subtle text-xs ml-1">
               ↑{r.substitutedOn}&apos;
             </span>
           )}
           {r.substitutedOff !== undefined && (
-            <span className="text-gray-600 text-xs ml-1">
+            <span className="text-subtle text-xs ml-1">
               ↓{r.substitutedOff}&apos;
             </span>
           )}
         </span>
-        <span className="flex items-center gap-1 text-xs text-gray-500">
+        <span className="flex items-center gap-1 text-xs text-subtle">
           {r.goals > 0 && <span>⚽{r.goals}</span>}
           {r.assists > 0 && <span>🅰️{r.assists}</span>}
         </span>
@@ -305,9 +305,9 @@ function PlayerRatingsPanel({
     <div className="card">
       <div className="flex items-center gap-2 mb-3">
         <Star size={16} className="text-accent" />
-        <h3 className="text-sm font-medium text-gray-400">Player Ratings</h3>
+        <h3 className="text-sm font-medium text-muted">Player Ratings</h3>
       </div>
-      <p className="text-xs text-gray-600 mb-2">
+      <p className="text-xs text-subtle mb-2">
         Click a player to view their heat map
       </p>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -346,7 +346,7 @@ function StatRow({
   return (
     <>
       <div className="text-center text-home font-medium">{home ?? 0}</div>
-      <div className="text-center text-gray-400">{label}</div>
+      <div className="text-center text-muted">{label}</div>
       <div className="text-center text-away font-medium">{away ?? 0}</div>
     </>
   );
@@ -459,7 +459,7 @@ export default function MatchPage() {
   }
 
   if (!match) {
-    return <p className="text-gray-400">Match not found</p>;
+    return <p className="text-muted">Match not found</p>;
   }
 
   const displayEvents = isLive ? liveEvents : match.events;
@@ -473,7 +473,7 @@ export default function MatchPage() {
     <div className="space-y-4">
       <Link
         href="/league"
-        className="flex items-center gap-1 text-gray-400 hover:text-gray-200 text-sm"
+        className="flex items-center gap-1 text-muted hover:text-foreground text-sm"
       >
         <ChevronLeft size={16} />
         Back to League
@@ -504,7 +504,7 @@ export default function MatchPage() {
               </div>
             )}
             {isCompleted && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-subtle mt-1">
                 Full Time
                 {match.extraTime && !match.penalties && " (AET)"}
                 {match.penalties &&
@@ -604,7 +604,7 @@ export default function MatchPage() {
                           "px-2 py-1 rounded text-xs font-medium",
                           speed === s
                             ? "bg-primary text-white"
-                            : "bg-bg text-gray-400"
+                            : "bg-bg text-muted"
                         )}
                       >
                         {s}x
@@ -624,7 +624,7 @@ export default function MatchPage() {
                     }}
                     className="flex-1 accent-primary"
                   />
-                  <span className="text-sm font-mono text-gray-400 w-12 text-right">
+                  <span className="text-sm font-mono text-muted w-12 text-right">
                     {currentMinute}&apos;
                   </span>
                 </div>
@@ -632,7 +632,7 @@ export default function MatchPage() {
 
               {/* Live indicator */}
               {isLive && connected && (
-                <div className="flex items-center gap-2 mt-4 text-sm text-gray-400">
+                <div className="flex items-center gap-2 mt-4 text-sm text-muted">
                   <Radio size={14} className="text-red-500 animate-pulse" />
                   Streaming live — minute {liveMinute}&apos;
                 </div>
@@ -648,7 +648,7 @@ export default function MatchPage() {
                     "px-3 py-1 rounded text-sm font-medium transition-colors",
                     activeTab === "events"
                       ? "bg-primary text-white"
-                      : "bg-bg text-gray-400 hover:text-gray-200"
+                      : "bg-bg text-muted hover:text-foreground"
                   )}
                 >
                   Events
@@ -660,7 +660,7 @@ export default function MatchPage() {
                       "px-3 py-1 rounded text-sm font-medium transition-colors",
                       activeTab === "ratings"
                         ? "bg-primary text-white"
-                        : "bg-bg text-gray-400 hover:text-gray-200"
+                        : "bg-bg text-muted hover:text-foreground"
                     )}
                   >
                     Ratings
@@ -689,7 +689,7 @@ export default function MatchPage() {
                           "bg-blue-500/5 border border-blue-500/10"
                       )}
                     >
-                      <span className="text-gray-500 font-mono w-8 flex-shrink-0">
+                      <span className="text-subtle font-mono w-8 flex-shrink-0">
                         {event.minute}&apos;
                       </span>
                       <span className="w-5 flex-shrink-0">
@@ -702,7 +702,7 @@ export default function MatchPage() {
                             : event.type === "RED_CARD" ||
                               event.type === "SECOND_YELLOW"
                             ? "text-red-400 font-medium"
-                            : "text-gray-300"
+                            : "text-foreground"
                         )}
                       >
                         {event.detail}
@@ -710,12 +710,12 @@ export default function MatchPage() {
                     </div>
                   ))}
                   {visibleEvents.length === 0 && !isLive && (
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-subtle text-sm">
                       Press play to start the replay
                     </p>
                   )}
                   {visibleEvents.length === 0 && isLive && (
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-subtle text-sm">
                       Waiting for match to begin...
                     </p>
                   )}
@@ -751,7 +751,7 @@ export default function MatchPage() {
 
       {!isCompleted && !isLive && (
         <div className="card text-center py-12">
-          <p className="text-gray-400">
+          <p className="text-muted">
             This match hasn&apos;t been played yet. Check back after match day.
           </p>
         </div>

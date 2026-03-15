@@ -39,7 +39,7 @@ export default function ContinentalPage() {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Continental Cup</h1>
-        <div className="text-gray-400">Loading...</div>
+        <div className="text-muted">Loading...</div>
       </div>
     );
   }
@@ -48,9 +48,9 @@ export default function ContinentalPage() {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Continental Cup</h1>
-        <div className="bg-panel rounded-lg border border-gray-800 p-8 text-center">
-          <p className="text-gray-400">No active Continental Cup.</p>
-          <p className="text-gray-500 text-sm mt-2">
+        <div className="bg-panel rounded-lg border border-border p-8 text-center">
+          <p className="text-muted">No active Continental Cup.</p>
+          <p className="text-subtle text-sm mt-2">
             Top 3 clubs from each division qualify at the end of each season.
           </p>
         </div>
@@ -75,12 +75,12 @@ export default function ContinentalPage() {
             {data.groupStage.map((group) => (
               <div
                 key={group.id}
-                className="bg-panel rounded-lg border border-gray-800"
+                className="bg-panel rounded-lg border border-border"
               >
-                <div className="px-4 py-3 border-b border-gray-800">
+                <div className="px-4 py-3 border-b border-border">
                   <h3 className="font-semibold">{group.name}</h3>
                 </div>
-                <div className="divide-y divide-gray-800">
+                <div className="divide-y divide-border">
                   {group.fixtures.map((f) => (
                     <div
                       key={f.id}
@@ -114,12 +114,12 @@ export default function ContinentalPage() {
             {data.knockout.map((round) => (
               <div
                 key={round.id}
-                className="bg-panel rounded-lg border border-gray-800"
+                className="bg-panel rounded-lg border border-border"
               >
-                <div className="px-4 py-3 border-b border-gray-800">
+                <div className="px-4 py-3 border-b border-border">
                   <h3 className="font-semibold">{round.name}</h3>
                 </div>
-                <div className="divide-y divide-gray-800">
+                <div className="divide-y divide-border">
                   {round.fixtures.map((f) => (
                     <div
                       key={f.id}

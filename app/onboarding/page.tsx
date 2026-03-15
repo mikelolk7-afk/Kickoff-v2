@@ -48,10 +48,10 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center px-4">
       <div className="max-w-lg w-full">
-        <div className="bg-panel border border-gray-800 rounded-xl p-8 text-center">
+        <div className="bg-panel border border-border rounded-xl p-8 text-center">
           <div className="text-5xl mb-4" dangerouslySetInnerHTML={{ __html: current.icon }} />
           <h2 className="text-2xl font-bold mb-3">{current.title}</h2>
-          <p className="text-gray-400 mb-8">{current.description}</p>
+          <p className="text-muted mb-8">{current.description}</p>
 
           <div className="flex justify-center gap-2 mb-6">
             {STEPS.map((_, i) => (
@@ -68,7 +68,7 @@ export default function OnboardingPage() {
             {step > 0 && (
               <button
                 onClick={() => setStep(step - 1)}
-                className="px-6 py-2.5 border border-gray-700 text-gray-300 rounded-lg font-medium hover:bg-gray-800/50 transition-colors"
+                className="px-6 py-2.5 border border-border text-foreground rounded-lg font-medium hover:bg-surface/50 transition-colors"
               >
                 Back
               </button>
@@ -90,7 +90,7 @@ export default function OnboardingPage() {
           {!isLast && (
             <button
               onClick={() => router.push("/dashboard")}
-              className="mt-4 text-gray-500 text-sm hover:text-gray-400"
+              className="mt-4 text-subtle text-sm hover:text-muted"
             >
               Skip tutorial
             </button>

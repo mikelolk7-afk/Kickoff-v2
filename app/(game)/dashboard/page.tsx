@@ -78,7 +78,7 @@ export default function DashboardPage() {
   if (!data?.club) {
     return (
       <div className="text-center py-20">
-        <p className="text-gray-400">No club found. Please register first.</p>
+        <p className="text-muted">No club found. Please register first.</p>
       </div>
     );
   }
@@ -87,13 +87,13 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">{data.club.name}</h1>
-        <p className="text-gray-400">{data.division.name}</p>
+        <p className="text-muted">{data.division.name}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Next Match */}
         <div className="card space-y-3">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+          <div className="flex items-center gap-2 text-muted text-sm">
             <Calendar size={16} />
             Next Match
           </div>
@@ -109,7 +109,7 @@ export default function DashboardPage() {
                     {data.nextFixture.homeClub.name}
                   </p>
                 </div>
-                <div className="px-4 text-gray-500 text-lg font-bold">vs</div>
+                <div className="px-4 text-subtle text-lg font-bold">vs</div>
                 <div className="text-center flex-1">
                   <div
                     className="w-8 h-8 rounded-full mx-auto mb-1"
@@ -125,13 +125,13 @@ export default function DashboardPage() {
               </div>
             </Link>
           ) : (
-            <p className="text-gray-500">No upcoming match</p>
+            <p className="text-subtle">No upcoming match</p>
           )}
         </div>
 
         {/* Last Result */}
         <div className="card space-y-3">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+          <div className="flex items-center gap-2 text-muted text-sm">
             <Trophy size={16} />
             Last Result
           </div>
@@ -150,13 +150,13 @@ export default function DashboardPage() {
               </div>
             </Link>
           ) : (
-            <p className="text-gray-500">No results yet</p>
+            <p className="text-subtle">No results yet</p>
           )}
         </div>
 
         {/* League Position */}
         <div className="card space-y-3">
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
+          <div className="flex items-center gap-2 text-muted text-sm">
             <TrendingUp size={16} />
             League Position
           </div>
@@ -164,13 +164,13 @@ export default function DashboardPage() {
             <span className="text-4xl font-bold text-primary">
               {data.leaguePosition || "–"}
             </span>
-            <span className="text-gray-500">/ {data.totalTeams}</span>
+            <span className="text-subtle">/ {data.totalTeams}</span>
           </div>
           {data.leagueStats && (
-            <div className="flex gap-4 text-sm text-gray-400">
+            <div className="flex gap-4 text-sm text-muted">
               <span>P {data.leagueStats.played}</span>
               <span className="text-green-400">W {data.leagueStats.won}</span>
-              <span className="text-gray-300">D {data.leagueStats.drawn}</span>
+              <span className="text-foreground">D {data.leagueStats.drawn}</span>
               <span className="text-red-400">L {data.leagueStats.lost}</span>
               <span className="text-accent font-medium">
                 {data.leagueStats.points} pts

@@ -108,7 +108,7 @@ function QualityStars({ overall }: { overall: number }) {
               ? "text-yellow-400 fill-yellow-400"
               : i === stars && halfStar
               ? "text-yellow-400 fill-yellow-400/50"
-              : "text-gray-600"
+              : "text-subtle"
           )}
         />
       ))}
@@ -126,7 +126,7 @@ function OverallBadge({ overall }: { overall: number }) {
       ? "text-green-400 border-green-400/50 bg-green-400/10"
       : overall >= 65
       ? "text-blue-400 border-blue-400/50 bg-blue-400/10"
-      : "text-gray-400 border-gray-600 bg-gray-800";
+      : "text-muted border-gray-600 bg-surface";
 
   return (
     <span
@@ -172,12 +172,12 @@ function CountdownClock({ expiresAt }: { expiresAt: string }) {
   const isUrgent = remaining < 60000;
 
   return (
-    <div className={cn("flex items-center gap-0.5 font-mono text-xs", isUrgent ? "text-red-400" : "text-gray-400")}>
+    <div className={cn("flex items-center gap-0.5 font-mono text-xs", isUrgent ? "text-red-400" : "text-muted")}>
       <Timer size={10} className="mr-0.5" />
       <span className={cn("font-bold", isUrgent && "animate-pulse")}>
         {String(minutes).padStart(2, "0")}
       </span>
-      <span className={isUrgent ? "text-red-500" : "text-gray-600"}>:</span>
+      <span className={isUrgent ? "text-red-500" : "text-subtle"}>:</span>
       <span className={cn("font-bold", isUrgent && "animate-pulse")}>
         {String(seconds).padStart(2, "0")}
       </span>
@@ -207,7 +207,7 @@ function SortHeader({
   return (
     <button
       onClick={() => onSort(field)}
-      className={cn("flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold hover:text-white transition-colors", className, isActive ? "text-accent" : "text-gray-500")}
+      className={cn("flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold hover:text-white transition-colors", className, isActive ? "text-accent" : "text-subtle")}
     >
       {label}
       {isActive ? (
@@ -245,14 +245,14 @@ function AuctionRow({
       <tr
         onClick={() => onExpand(auction.id)}
         className={cn(
-          "border-b border-gray-800/50 cursor-pointer transition-colors",
-          isExpanded ? "bg-gray-800/40" : "hover:bg-gray-800/20"
+          "border-b border-border cursor-pointer transition-colors",
+          isExpanded ? "bg-surface/40" : "hover:bg-surface"
         )}
       >
         {/* Name + Nationality */}
         <td className="py-2.5 px-3">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-500 w-5 text-center">{auction.player.nationality.slice(0, 3).toUpperCase()}</span>
+            <span className="text-[10px] text-subtle w-5 text-center">{auction.player.nationality.slice(0, 3).toUpperCase()}</span>
             <span className="font-medium text-sm truncate">{auction.player.name}</span>
           </div>
         </td>
@@ -281,7 +281,7 @@ function AuctionRow({
             {formatMoney(auction.currentBid ?? auction.askingPrice)}
           </span>
           {auction.bidCount > 0 && (
-            <p className="text-[10px] text-gray-500">{auction.bidCount} bid{auction.bidCount !== 1 ? "s" : ""}</p>
+            <p className="text-[10px] text-subtle">{auction.bidCount} bid{auction.bidCount !== 1 ? "s" : ""}</p>
           )}
         </td>
 
@@ -308,7 +308,7 @@ function AuctionRow({
 
       {/* Expanded detail row */}
       {isExpanded && (
-        <tr className="bg-gray-800/30 border-b border-gray-800/50">
+        <tr className="bg-surface/30 border-b border-border">
           <td colSpan={8} className="px-4 py-3">
             <div className="flex gap-6">
               {/* Attributes grid */}
@@ -322,10 +322,10 @@ function AuctionRow({
                   { label: "POT", value: auction.player.potential },
                 ].map(({ label, value }) => (
                   <div key={label} className="text-center">
-                    <p className="text-[10px] text-gray-500 uppercase">{label}</p>
+                    <p className="text-[10px] text-subtle uppercase">{label}</p>
                     <p className={cn(
                       "text-sm font-bold",
-                      value >= 80 ? "text-green-400" : value >= 65 ? "text-blue-400" : "text-gray-300"
+                      value >= 80 ? "text-green-400" : value >= 65 ? "text-blue-400" : "text-foreground"
                     )}>
                       {value}
                     </p>
@@ -343,13 +343,13 @@ function AuctionRow({
               </div>
 
               {/* Bid section */}
-              <div className="border-l border-gray-700 pl-4 min-w-[200px]">
-                <p className="text-xs text-gray-400 mb-2">
+              <div className="border-l border-border pl-4 min-w-[200px]">
+                <p className="text-xs text-muted mb-2">
                   Wage: <span className="text-white font-medium">€{auction.player.wage.toLocaleString()}/w</span>
                 </p>
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
-                    <label className="text-[10px] text-gray-500 block mb-0.5">Custom bid</label>
+                    <label className="text-[10px] text-subtle block mb-0.5">Custom bid</label>
                     <input
                       type="number"
                       value={customBid}
@@ -371,7 +371,7 @@ function AuctionRow({
                     Bid
                   </button>
                 </div>
-                <div className="flex justify-between text-[10px] text-gray-600 mt-1">
+                <div className="flex justify-between text-[10px] text-subtle mt-1">
                   <span>Min: {formatMoney(auction.minBid)}</span>
                   <span>Buy now: {formatMoney(auction.buyNow)}</span>
                 </div>
@@ -500,13 +500,13 @@ export default function TransfersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Transfers</h1>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-subtle">
           {auctionData?.total ?? 0} players on market
         </span>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-800">
+      <div className="flex border-b border-border">
         {([
           { key: "auction" as const, label: "Auctions", icon: Gavel },
           { key: "market" as const, label: "Scouting", icon: Search },
@@ -519,7 +519,7 @@ export default function TransfersPage() {
               "flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors -mb-px",
               tab === key
                 ? "border-primary text-white"
-                : "border-transparent text-gray-500 hover:text-gray-300"
+                : "border-transparent text-subtle hover:text-foreground"
             )}
           >
             <Icon size={14} />
@@ -535,7 +535,7 @@ export default function TransfersPage() {
           <div className="flex items-center gap-3 flex-wrap">
             {/* Position filter */}
             <div className="flex items-center gap-1">
-              <ListFilter size={12} className="text-gray-500" />
+              <ListFilter size={12} className="text-subtle" />
               {["all", "GK", "DEF", "MID", "FWD"].map((pos) => (
                 <button
                   key={pos}
@@ -546,7 +546,7 @@ export default function TransfersPage() {
                       ? pos === "all"
                         ? "bg-primary text-white"
                         : POS_COLORS[pos]
-                      : "bg-gray-800 text-gray-400 hover:text-gray-200"
+                      : "bg-surface text-muted hover:text-foreground"
                   )}
                 >
                   {pos === "all" ? "All" : pos}
@@ -556,7 +556,7 @@ export default function TransfersPage() {
 
             {/* Search */}
             <div className="flex-1 max-w-xs relative">
-              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-subtle" />
               <input
                 type="text"
                 value={searchQuery}
@@ -566,7 +566,7 @@ export default function TransfersPage() {
               />
             </div>
 
-            <span className="ml-auto text-[10px] text-gray-600">
+            <span className="ml-auto text-[10px] text-subtle">
               Auto-refreshes · 5 min auction windows
             </span>
           </div>
@@ -587,7 +587,7 @@ export default function TransfersPage() {
           <div className="card p-0 overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-800 bg-gray-900/50">
+                <tr className="border-b border-border bg-surface/50">
                   <th className="py-2.5 px-3 text-left">
                     <SortHeader label="Name" field="name" currentSort={sortField} currentOrder={sortOrder} onSort={handleSort} />
                   </th>
@@ -601,7 +601,7 @@ export default function TransfersPage() {
                     <SortHeader label="OVR" field="overall" currentSort={sortField} currentOrder={sortOrder} onSort={handleSort} className="justify-center" />
                   </th>
                   <th className="py-2.5 px-2 text-left">
-                    <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-500">Qlty</span>
+                    <span className="text-[10px] uppercase tracking-wider font-semibold text-subtle">Qlty</span>
                   </th>
                   <th className="py-2.5 px-2 text-right">
                     <SortHeader label="Value" field="price" currentSort={sortField} currentOrder={sortOrder} onSort={handleSort} className="justify-end" />
@@ -610,7 +610,7 @@ export default function TransfersPage() {
                     <SortHeader label="Deadline" field="deadline" currentSort={sortField} currentOrder={sortOrder} onSort={handleSort} className="justify-center" />
                   </th>
                   <th className="py-2.5 px-3 text-right">
-                    <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-500">Bid</span>
+                    <span className="text-[10px] uppercase tracking-wider font-semibold text-subtle">Bid</span>
                   </th>
                 </tr>
               </thead>
@@ -635,7 +635,7 @@ export default function TransfersPage() {
             )}
 
             {!auctionLoading && filteredAuctions.length === 0 && (
-              <p className="text-gray-500 text-center py-12 text-sm">
+              <p className="text-subtle text-center py-12 text-sm">
                 {searchQuery
                   ? "No players match your search"
                   : "No auctions available. Market refreshes every 5 minutes."}
@@ -652,23 +652,23 @@ export default function TransfersPage() {
             <div className="card p-0 overflow-hidden">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-800 bg-gray-900/50">
-                    <th className="py-2.5 px-3 text-left text-[10px] uppercase tracking-wider font-semibold text-gray-500">Name</th>
-                    <th className="py-2.5 px-2 text-left text-[10px] uppercase tracking-wider font-semibold text-gray-500">Pos</th>
-                    <th className="py-2.5 px-2 text-center text-[10px] uppercase tracking-wider font-semibold text-gray-500">Age</th>
-                    <th className="py-2.5 px-2 text-center text-[10px] uppercase tracking-wider font-semibold text-gray-500">OVR</th>
-                    <th className="py-2.5 px-2 text-left text-[10px] uppercase tracking-wider font-semibold text-gray-500">Club</th>
-                    <th className="py-2.5 px-2 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500">Price</th>
-                    <th className="py-2.5 px-2 text-center text-[10px] uppercase tracking-wider font-semibold text-gray-500">Offers</th>
-                    <th className="py-2.5 px-3 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500"></th>
+                  <tr className="border-b border-border bg-surface/50">
+                    <th className="py-2.5 px-3 text-left text-[10px] uppercase tracking-wider font-semibold text-subtle">Name</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] uppercase tracking-wider font-semibold text-subtle">Pos</th>
+                    <th className="py-2.5 px-2 text-center text-[10px] uppercase tracking-wider font-semibold text-subtle">Age</th>
+                    <th className="py-2.5 px-2 text-center text-[10px] uppercase tracking-wider font-semibold text-subtle">OVR</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] uppercase tracking-wider font-semibold text-subtle">Club</th>
+                    <th className="py-2.5 px-2 text-right text-[10px] uppercase tracking-wider font-semibold text-subtle">Price</th>
+                    <th className="py-2.5 px-2 text-center text-[10px] uppercase tracking-wider font-semibold text-subtle">Offers</th>
+                    <th className="py-2.5 px-3 text-right text-[10px] uppercase tracking-wider font-semibold text-subtle"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {market.listings.map((listing) => (
-                    <tr key={listing.id} className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors">
+                    <tr key={listing.id} className="border-b border-border hover:bg-surface transition-colors">
                       <td className="py-2.5 px-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-gray-500 w-5 text-center">
+                          <span className="text-[10px] text-subtle w-5 text-center">
                             {listing.player.nationality.slice(0, 3).toUpperCase()}
                           </span>
                           <span className="font-medium text-sm">{listing.player.name}</span>
@@ -681,13 +681,13 @@ export default function TransfersPage() {
                       <td className="py-2.5 px-2 text-center">
                         <OverallBadge overall={listing.player.overall} />
                       </td>
-                      <td className="py-2.5 px-2 text-sm text-gray-400 truncate max-w-[120px]">
+                      <td className="py-2.5 px-2 text-sm text-muted truncate max-w-[120px]">
                         {listing.sellerClub.name}
                       </td>
                       <td className="py-2.5 px-2 text-right">
                         <span className="font-bold text-accent text-sm">{formatMoney(listing.askingPrice)}</span>
                       </td>
-                      <td className="py-2.5 px-2 text-center text-xs text-gray-500">
+                      <td className="py-2.5 px-2 text-center text-xs text-subtle">
                         {listing._count.offers}
                       </td>
                       <td className="py-2.5 px-3 text-right">
@@ -709,7 +709,7 @@ export default function TransfersPage() {
               </table>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-12 text-sm">No listings available</p>
+            <p className="text-subtle text-center py-12 text-sm">No listings available</p>
           )}
         </div>
       )}
@@ -719,7 +719,7 @@ export default function TransfersPage() {
         <div className="space-y-6">
           {/* Received */}
           <div>
-            <h2 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-green-400" />
               Received Offers
             </h2>
@@ -727,21 +727,21 @@ export default function TransfersPage() {
               <div className="card p-0 overflow-hidden">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-800 bg-gray-900/50">
-                      <th className="py-2 px-3 text-left text-[10px] uppercase tracking-wider font-semibold text-gray-500">Player</th>
-                      <th className="py-2 px-2 text-left text-[10px] uppercase tracking-wider font-semibold text-gray-500">From</th>
-                      <th className="py-2 px-2 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500">Fee</th>
-                      <th className="py-2 px-2 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500">Wage</th>
-                      <th className="py-2 px-3 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500">Actions</th>
+                    <tr className="border-b border-border bg-surface/50">
+                      <th className="py-2 px-3 text-left text-[10px] uppercase tracking-wider font-semibold text-subtle">Player</th>
+                      <th className="py-2 px-2 text-left text-[10px] uppercase tracking-wider font-semibold text-subtle">From</th>
+                      <th className="py-2 px-2 text-right text-[10px] uppercase tracking-wider font-semibold text-subtle">Fee</th>
+                      <th className="py-2 px-2 text-right text-[10px] uppercase tracking-wider font-semibold text-subtle">Wage</th>
+                      <th className="py-2 px-3 text-right text-[10px] uppercase tracking-wider font-semibold text-subtle">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {offers.receivedOffers.map((offer) => (
-                      <tr key={offer.id} className="border-b border-gray-800/50">
+                      <tr key={offer.id} className="border-b border-border">
                         <td className="py-2.5 px-3 font-medium text-sm">{offer.listing.player.name}</td>
-                        <td className="py-2.5 px-2 text-sm text-gray-400">{offer.buyerClub?.name}</td>
+                        <td className="py-2.5 px-2 text-sm text-muted">{offer.buyerClub?.name}</td>
                         <td className="py-2.5 px-2 text-right font-bold text-accent text-sm">{formatMoney(offer.offerFee)}</td>
-                        <td className="py-2.5 px-2 text-right text-sm text-gray-300">€{offer.offerWage}/w</td>
+                        <td className="py-2.5 px-2 text-right text-sm text-foreground">€{offer.offerWage}/w</td>
                         <td className="py-2.5 px-3 text-right">
                           <div className="flex gap-1.5 justify-end">
                             <button
@@ -764,13 +764,13 @@ export default function TransfersPage() {
                 </table>
               </div>
             ) : (
-              <p className="text-gray-600 text-sm pl-1">No offers received</p>
+              <p className="text-subtle text-sm pl-1">No offers received</p>
             )}
           </div>
 
           {/* Sent */}
           <div>
-            <h2 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
               <Send size={14} className="text-blue-400" />
               Sent Offers
             </h2>
@@ -778,16 +778,16 @@ export default function TransfersPage() {
               <div className="card p-0 overflow-hidden">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-800 bg-gray-900/50">
-                      <th className="py-2 px-3 text-left text-[10px] uppercase tracking-wider font-semibold text-gray-500">Player</th>
-                      <th className="py-2 px-2 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500">Fee</th>
-                      <th className="py-2 px-2 text-center text-[10px] uppercase tracking-wider font-semibold text-gray-500">Status</th>
-                      <th className="py-2 px-3 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500">Counter</th>
+                    <tr className="border-b border-border bg-surface/50">
+                      <th className="py-2 px-3 text-left text-[10px] uppercase tracking-wider font-semibold text-subtle">Player</th>
+                      <th className="py-2 px-2 text-right text-[10px] uppercase tracking-wider font-semibold text-subtle">Fee</th>
+                      <th className="py-2 px-2 text-center text-[10px] uppercase tracking-wider font-semibold text-subtle">Status</th>
+                      <th className="py-2 px-3 text-right text-[10px] uppercase tracking-wider font-semibold text-subtle">Counter</th>
                     </tr>
                   </thead>
                   <tbody>
                     {offers.sentOffers.map((offer) => (
-                      <tr key={offer.id} className="border-b border-gray-800/50">
+                      <tr key={offer.id} className="border-b border-border">
                         <td className="py-2.5 px-3 font-medium text-sm">{offer.listing.player.name}</td>
                         <td className="py-2.5 px-2 text-right font-bold text-accent text-sm">{formatMoney(offer.offerFee)}</td>
                         <td className="py-2.5 px-2 text-center">
@@ -801,7 +801,7 @@ export default function TransfersPage() {
                             {offer.status}
                           </span>
                         </td>
-                        <td className="py-2.5 px-3 text-right text-sm text-gray-400">
+                        <td className="py-2.5 px-3 text-right text-sm text-muted">
                           {offer.counterFee ? formatMoney(offer.counterFee) : "—"}
                         </td>
                       </tr>
@@ -810,7 +810,7 @@ export default function TransfersPage() {
                 </table>
               </div>
             ) : (
-              <p className="text-gray-600 text-sm pl-1">No sent offers</p>
+              <p className="text-subtle text-sm pl-1">No sent offers</p>
             )}
           </div>
         </div>
@@ -824,19 +824,19 @@ export default function TransfersPage() {
               <OverallBadge overall={offerModal.player.overall} />
               <div>
                 <h3 className="text-lg font-bold">{offerModal.player.name}</h3>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-muted">
                   {offerModal.player.position} · {offerModal.player.age}y · {offerModal.player.nationality}
                 </p>
               </div>
             </div>
 
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted">
               Asking: <span className="text-accent font-bold">{formatMoney(offerModal.askingPrice)}</span>
               {" "}from {offerModal.sellerClub.name}
             </p>
 
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Transfer Fee</label>
+              <label className="block text-xs text-subtle mb-1">Transfer Fee</label>
               <input
                 type="number"
                 value={offerFee}
@@ -846,7 +846,7 @@ export default function TransfersPage() {
             </div>
 
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Wage Offer (€/week)</label>
+              <label className="block text-xs text-subtle mb-1">Wage Offer (€/week)</label>
               <input
                 type="number"
                 value={offerWage}

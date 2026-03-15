@@ -52,26 +52,26 @@ export default function StorePage() {
         <div className="card flex items-center gap-3">
           <Sparkles size={20} className="text-accent" />
           <div>
-            <p className="text-xs text-gray-400">Credits</p>
+            <p className="text-xs text-muted">Credits</p>
             <p className="text-xl font-bold text-accent">{data.credits}</p>
           </div>
         </div>
         <div className="card flex items-center gap-3">
           <Crown size={20} className="text-yellow-500" />
           <div>
-            <p className="text-xs text-gray-400">Coins</p>
+            <p className="text-xs text-muted">Coins</p>
             <p className="text-xl font-bold text-yellow-500">{data.coins}</p>
           </div>
         </div>
       </div>
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-subtle">
         Credits buy convenience and cosmetics only. Never player quality or match outcomes.
       </p>
 
       {/* Credit Packs */}
       <div>
-        <h2 className="text-sm font-medium text-gray-400 mb-3">Credit Packs</h2>
+        <h2 className="text-sm font-medium text-muted mb-3">Credit Packs</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {data.packages.map((pkg, i) => (
             <div
@@ -88,7 +88,7 @@ export default function StorePage() {
               )}
               <p className="text-lg font-bold">{pkg.name}</p>
               <p className="text-3xl font-bold text-accent">{pkg.credits}</p>
-              <p className="text-xs text-gray-400">credits</p>
+              <p className="text-xs text-muted">credits</p>
               <button
                 onClick={() => purchase.mutate(pkg.id)}
                 className="btn-primary w-full"
@@ -106,10 +106,10 @@ export default function StorePage() {
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <h2 className="text-lg font-bold text-primary">{data.monthlyPass.name}</h2>
-            <p className="text-gray-400 text-sm">
+            <p className="text-muted text-sm">
               {data.monthlyPass.creditsPerDay} credits delivered daily
             </p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-subtle mt-1">
               ~{data.monthlyPass.creditsPerDay * 30} credits/month · Best for active managers
             </p>
           </div>

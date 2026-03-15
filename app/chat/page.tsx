@@ -68,20 +68,20 @@ export default function ChatPage() {
 
       <div className="flex gap-4 h-[calc(100%-3rem)]">
         {/* Room List */}
-        <div className="w-48 flex-shrink-0 bg-panel rounded-lg border border-gray-800 overflow-y-auto">
+        <div className="w-48 flex-shrink-0 bg-panel rounded-lg border border-border overflow-y-auto">
           {roomsLoading ? (
-            <div className="p-4 text-gray-400 text-sm">Loading rooms...</div>
+            <div className="p-4 text-muted text-sm">Loading rooms...</div>
           ) : rooms.length === 0 ? (
-            <div className="p-4 text-gray-400 text-sm">No rooms available</div>
+            <div className="p-4 text-muted text-sm">No rooms available</div>
           ) : (
             rooms.map((room) => (
               <button
                 key={room.id}
                 onClick={() => setActiveRoom(room)}
-                className={`w-full text-left px-4 py-3 text-sm border-b border-gray-800 hover:bg-gray-800/50 transition-colors ${
+                className={`w-full text-left px-4 py-3 text-sm border-b border-border hover:bg-surface/50 transition-colors ${
                   activeRoom?.id === room.id
                     ? "bg-primary/15 text-primary"
-                    : "text-gray-300"
+                    : "text-foreground"
                 }`}
               >
                 {room.label}
@@ -91,23 +91,23 @@ export default function ChatPage() {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 bg-panel rounded-lg border border-gray-800 flex flex-col">
+        <div className="flex-1 bg-panel rounded-lg border border-border flex flex-col">
           {!activeRoom ? (
-            <div className="flex-1 flex items-center justify-center text-gray-400">
+            <div className="flex-1 flex items-center justify-center text-muted">
               Select a chat room to start
             </div>
           ) : (
             <>
-              <div className="px-4 py-3 border-b border-gray-800 font-semibold">
+              <div className="px-4 py-3 border-b border-border font-semibold">
                 {activeRoom.label}
               </div>
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messagesLoading ? (
-                  <div className="text-gray-400 text-sm">Loading messages...</div>
+                  <div className="text-muted text-sm">Loading messages...</div>
                 ) : messages.length === 0 ? (
-                  <div className="text-gray-500 text-sm text-center">
+                  <div className="text-subtle text-sm text-center">
                     No messages yet. Start the conversation!
                   </div>
                 ) : (
@@ -117,11 +117,11 @@ export default function ChatPage() {
                         <span className="text-sm font-medium text-primary">
                           {msg.user.name ?? "Unknown"}
                         </span>
-                        <span className="text-xs text-gray-600">
+                        <span className="text-xs text-subtle">
                           {new Date(msg.createdAt).toLocaleTimeString()}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-300">{msg.body}</p>
+                      <p className="text-sm text-foreground">{msg.body}</p>
                     </div>
                   ))
                 )}
@@ -135,7 +135,7 @@ export default function ChatPage() {
                     sendMut.mutate(newMessage);
                   }
                 }}
-                className="p-3 border-t border-gray-800 flex gap-2"
+                className="p-3 border-t border-border flex gap-2"
               >
                 <input
                   type="text"
@@ -143,7 +143,7 @@ export default function ChatPage() {
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Type a message..."
                   maxLength={500}
-                  className="flex-1 bg-gray-800 rounded-lg px-4 py-2 text-sm text-gray-200 placeholder-gray-500 outline-none focus:ring-1 focus:ring-primary"
+                  className="flex-1 bg-surface rounded-lg px-4 py-2 text-sm text-foreground placeholder-subtle outline-none focus:ring-1 focus:ring-primary"
                 />
                 <button
                   type="submit"

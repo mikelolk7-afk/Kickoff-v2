@@ -184,7 +184,7 @@ function LineupPitch({
                 isSelected
                   ? "ring-2 ring-accent scale-110"
                   : isEmpty
-                  ? "border-dashed border-gray-500 bg-gray-800/50"
+                  ? "border-dashed border-gray-500 bg-surface/50"
                   : isWrongPos
                   ? "border-orange-400 " + posColor(slot.posType)
                   : "border-white/30 " + posColor(slot.posType)
@@ -195,14 +195,14 @@ function LineupPitch({
                   {player.overall}
                 </span>
               ) : (
-                <span className="text-gray-500">+</span>
+                <span className="text-subtle">+</span>
               )}
             </div>
             {/* Name label */}
             <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 whitespace-nowrap">
               <span className={cn(
                 "text-[9px] font-medium px-1 py-0.5 rounded",
-                player ? "text-white bg-black/50" : "text-gray-600"
+                player ? "text-white bg-black/50" : "text-subtle"
               )}>
                 {player ? player.name.split(" ").pop() : slot.label}
               </span>
@@ -248,7 +248,7 @@ function PlayerPicker({
         <h3 className="text-sm font-medium text-accent">
           Select Player ({slotPosType} slot)
         </h3>
-        <button onClick={onClose} className="text-gray-500 hover:text-white text-sm">
+        <button onClick={onClose} className="text-subtle hover:text-white text-sm">
           Cancel
         </button>
       </div>
@@ -261,7 +261,7 @@ function PlayerPicker({
             onClick={() => setFilter(pos)}
             className={cn(
               "px-2 py-1 rounded text-xs font-medium",
-              filter === pos ? "bg-primary text-white" : "bg-bg text-gray-400"
+              filter === pos ? "bg-primary text-white" : "bg-bg text-muted"
             )}
           >
             {pos === "all" ? "All" : pos}
@@ -296,7 +296,7 @@ function PlayerPicker({
                   <span className="text-orange-400 text-xs ml-1">(out of position)</span>
                 )}
               </span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-subtle">
                 F:{player.form} M:{player.morale}
               </span>
               <span className="font-bold text-primary w-6 text-right">{player.overall}</span>
@@ -467,7 +467,7 @@ export default function TacticsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Tactics & Lineup</h1>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-muted">
             {filledCount}/{totalSlots} positions filled
           </p>
         </div>
@@ -508,7 +508,7 @@ export default function TacticsPage() {
         <div className="lg:col-span-2 space-y-4">
           <div className="card">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-medium text-gray-400">Starting XI</h2>
+              <h2 className="text-sm font-medium text-muted">Starting XI</h2>
               {selectedSlot && assignments[selectedSlot] && (
                 <button
                   onClick={handleRemoveFromSlot}
@@ -543,7 +543,7 @@ export default function TacticsPage() {
         <div className="space-y-4">
           {/* Formation */}
           <div className="card">
-            <h2 className="text-sm font-medium text-gray-400 mb-3">Formation</h2>
+            <h2 className="text-sm font-medium text-muted mb-3">Formation</h2>
             <div className="grid grid-cols-2 gap-2">
               {FORMATIONS.map((f) => (
                 <button
@@ -553,7 +553,7 @@ export default function TacticsPage() {
                     "px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                     formation === f
                       ? "bg-primary text-white"
-                      : "bg-bg text-gray-400 hover:text-gray-200"
+                      : "bg-bg text-muted hover:text-foreground"
                   )}
                 >
                   {f}
@@ -564,7 +564,7 @@ export default function TacticsPage() {
 
           {/* Mentality */}
           <div className="card">
-            <h2 className="text-sm font-medium text-gray-400 mb-3">Mentality</h2>
+            <h2 className="text-sm font-medium text-muted mb-3">Mentality</h2>
             <input
               type="range"
               min={1}
@@ -580,13 +580,13 @@ export default function TacticsPage() {
                   mentality <= 2
                     ? "text-blue-400"
                     : mentality === 3
-                    ? "text-gray-300"
+                    ? "text-foreground"
                     : "text-red-400"
                 )}
               >
                 {MENTALITY_LABELS[mentality].label}
               </span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-subtle">
                 {MENTALITY_LABELS[mentality].desc}
               </span>
             </div>
@@ -594,7 +594,7 @@ export default function TacticsPage() {
 
           {/* Pressing */}
           <div className="card">
-            <h2 className="text-sm font-medium text-gray-400 mb-3">Pressing</h2>
+            <h2 className="text-sm font-medium text-muted mb-3">Pressing</h2>
             <input
               type="range"
               min={1}
@@ -604,10 +604,10 @@ export default function TacticsPage() {
               className="w-full accent-primary"
             />
             <div className="flex justify-between mt-2">
-              <span className="text-sm font-medium text-gray-300">
+              <span className="text-sm font-medium text-foreground">
                 {PRESSING_LABELS[pressingLevel].label}
               </span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-subtle">
                 {PRESSING_LABELS[pressingLevel].desc}
               </span>
             </div>
@@ -615,7 +615,7 @@ export default function TacticsPage() {
 
           {/* Lineup summary */}
           <div className="card">
-            <h2 className="text-sm font-medium text-gray-400 mb-2">Lineup Summary</h2>
+            <h2 className="text-sm font-medium text-muted mb-2">Lineup Summary</h2>
             <div className="space-y-1">
               {slots.map((slot) => {
                 const player = assignments[slot.key]
@@ -642,7 +642,7 @@ export default function TacticsPage() {
                         <span className="text-primary font-bold text-xs">{player.overall}</span>
                       </>
                     ) : (
-                      <span className="flex-1 text-gray-600 italic">Empty</span>
+                      <span className="flex-1 text-subtle italic">Empty</span>
                     )}
                   </div>
                 );

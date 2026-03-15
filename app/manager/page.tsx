@@ -63,7 +63,7 @@ export default function ManagerPage() {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Manager Profile</h1>
-        <div className="text-gray-400">Loading...</div>
+        <div className="text-muted">Loading...</div>
       </div>
     );
   }
@@ -79,15 +79,15 @@ export default function ManagerPage() {
       <h1 className="text-2xl font-bold">Manager Profile</h1>
 
       {/* Overview */}
-      <div className="bg-panel rounded-lg border border-gray-800 p-6">
+      <div className="bg-panel rounded-lg border border-border p-6">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center text-2xl font-bold text-primary">
+          <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center text-2xl font-bold text-primary">
             {(user?.name?.[0] ?? "M").toUpperCase()}
           </div>
           <div>
             <h2 className="text-xl font-bold">{user?.name ?? "Manager"}</h2>
             {user?.club && (
-              <p className="text-gray-400">
+              <p className="text-muted">
                 {user.club.name} — {user.club.division.name}
               </p>
             )}
@@ -95,51 +95,51 @@ export default function ManagerPage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-gray-800/50 rounded-lg p-3 text-center">
+          <div className="bg-surface/50 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold text-primary">{profile.level}</div>
-            <div className="text-xs text-gray-400">Level</div>
+            <div className="text-xs text-muted">Level</div>
           </div>
-          <div className="bg-gray-800/50 rounded-lg p-3 text-center">
+          <div className="bg-surface/50 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold">{profile.reputation}</div>
-            <div className="text-xs text-gray-400">Reputation</div>
+            <div className="text-xs text-muted">Reputation</div>
           </div>
-          <div className="bg-gray-800/50 rounded-lg p-3 text-center">
+          <div className="bg-surface/50 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold">{winRate}%</div>
-            <div className="text-xs text-gray-400">Win Rate</div>
+            <div className="text-xs text-muted">Win Rate</div>
           </div>
-          <div className="bg-gray-800/50 rounded-lg p-3 text-center">
+          <div className="bg-surface/50 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold">{profile.xp}</div>
-            <div className="text-xs text-gray-400">XP</div>
+            <div className="text-xs text-muted">XP</div>
           </div>
         </div>
       </div>
 
       {/* Career Stats */}
-      <div className="bg-panel rounded-lg border border-gray-800 p-6">
+      <div className="bg-panel rounded-lg border border-border p-6">
         <h3 className="font-semibold mb-4">Career Record</h3>
         <div className="grid grid-cols-4 gap-4 text-center">
           <div>
             <div className="text-xl font-bold">{totalGames}</div>
-            <div className="text-xs text-gray-400">Played</div>
+            <div className="text-xs text-muted">Played</div>
           </div>
           <div>
             <div className="text-xl font-bold text-green-400">{profile.totalWins}</div>
-            <div className="text-xs text-gray-400">Won</div>
+            <div className="text-xs text-muted">Won</div>
           </div>
           <div>
             <div className="text-xl font-bold text-yellow-400">{profile.totalDraws}</div>
-            <div className="text-xs text-gray-400">Drawn</div>
+            <div className="text-xs text-muted">Drawn</div>
           </div>
           <div>
             <div className="text-xl font-bold text-red-400">{profile.totalLosses}</div>
-            <div className="text-xs text-gray-400">Lost</div>
+            <div className="text-xs text-muted">Lost</div>
           </div>
         </div>
       </div>
 
       {/* Badges */}
       {profile.badges && profile.badges.length > 0 && (
-        <div className="bg-panel rounded-lg border border-gray-800 p-6">
+        <div className="bg-panel rounded-lg border border-border p-6">
           <h3 className="font-semibold mb-4">Badges</h3>
           <div className="flex flex-wrap gap-2">
             {profile.badges.map((badge, i) => (
@@ -156,7 +156,7 @@ export default function ManagerPage() {
 
       {/* Trophies */}
       {profile.trophies && profile.trophies.length > 0 && (
-        <div className="bg-panel rounded-lg border border-gray-800 p-6">
+        <div className="bg-panel rounded-lg border border-border p-6">
           <h3 className="font-semibold mb-4">Trophies</h3>
           <div className="space-y-2">
             {profile.trophies.map((trophy, i) => (
@@ -164,7 +164,7 @@ export default function ManagerPage() {
                 <span className="text-accent">
                   {trophy.type === "league" ? "League" : trophy.type === "cup" ? "Cup" : "Continental"}
                 </span>
-                <span className="text-gray-400">Season {trophy.season}</span>
+                <span className="text-muted">Season {trophy.season}</span>
               </div>
             ))}
           </div>
@@ -173,7 +173,7 @@ export default function ManagerPage() {
 
       {/* Rivalries */}
       {rivalries && rivalries.length > 0 && (
-        <div className="bg-panel rounded-lg border border-gray-800 p-6">
+        <div className="bg-panel rounded-lg border border-border p-6">
           <h3 className="font-semibold mb-4">Rivalries</h3>
           <div className="space-y-3">
             {rivalries.map((rivalry) => (

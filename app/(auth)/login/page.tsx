@@ -36,7 +36,7 @@ export default function LoginPage() {
     <div className="card">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-primary">Kickoff Manager</h1>
-        <p className="text-gray-400 mt-2">Sign in to your club</p>
+        <p className="text-muted mt-2">Sign in to your club</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -47,7 +47,7 @@ export default function LoginPage() {
         )}
 
         <div>
-          <label htmlFor="email" className="block text-sm text-gray-300 mb-1">
+          <label htmlFor="email" className="block text-sm text-foreground mb-1">
             Email
           </label>
           <input
@@ -61,7 +61,7 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm text-gray-300 mb-1">
+          <label htmlFor="password" className="block text-sm text-foreground mb-1">
             Password
           </label>
           <input
@@ -83,7 +83,7 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <p className="text-center text-gray-400 text-sm mt-6">
+      <p className="text-center text-muted text-sm mt-6">
         Don&apos;t have an account?{" "}
         <Link href="/register" className="text-primary hover:underline">
           Create one

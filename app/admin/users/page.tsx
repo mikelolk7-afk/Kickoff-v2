@@ -66,36 +66,36 @@ export default function AdminUsersPage() {
           placeholder="Search by name or email..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="w-full max-w-md bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-sm"
+          className="w-full max-w-md bg-surface border border-border rounded-lg px-4 py-2 text-sm"
         />
       </div>
 
-      <div className="text-gray-400 text-sm mb-3">{total} users total</div>
+      <div className="text-muted text-sm mb-3">{total} users total</div>
 
       {loading ? (
-        <div className="text-gray-400">Loading...</div>
+        <div className="text-muted">Loading...</div>
       ) : (
-        <div className="bg-panel border border-gray-800 rounded-lg overflow-hidden">
+        <div className="bg-panel border border-border rounded-lg overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="border-b border-gray-800">
+            <thead className="border-b border-border">
               <tr>
-                <th className="text-left px-4 py-3 text-gray-400">Name</th>
-                <th className="text-left px-4 py-3 text-gray-400">Email</th>
-                <th className="text-left px-4 py-3 text-gray-400">Club</th>
-                <th className="text-left px-4 py-3 text-gray-400">Role</th>
-                <th className="text-left px-4 py-3 text-gray-400">Status</th>
-                <th className="text-left px-4 py-3 text-gray-400">Actions</th>
+                <th className="text-left px-4 py-3 text-muted">Name</th>
+                <th className="text-left px-4 py-3 text-muted">Email</th>
+                <th className="text-left px-4 py-3 text-muted">Club</th>
+                <th className="text-left px-4 py-3 text-muted">Role</th>
+                <th className="text-left px-4 py-3 text-muted">Status</th>
+                <th className="text-left px-4 py-3 text-muted">Actions</th>
               </tr>
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-b border-gray-800/50">
+                <tr key={u.id} className="border-b border-border">
                   <td className="px-4 py-3">{u.name ?? "-"}</td>
-                  <td className="px-4 py-3 text-gray-400">{u.email}</td>
+                  <td className="px-4 py-3 text-muted">{u.email}</td>
                   <td className="px-4 py-3">{u.club?.name ?? "-"}</td>
                   <td className="px-4 py-3">
                     <span
-                      className={u.role === "admin" ? "text-red-400" : "text-gray-400"}
+                      className={u.role === "admin" ? "text-red-400" : "text-muted"}
                     >
                       {u.role}
                     </span>
@@ -133,7 +133,7 @@ export default function AdminUsersPage() {
                     ) : (
                       <button
                         onClick={() => handleAction(u.id, "demote")}
-                        className="text-xs px-2 py-1 bg-gray-600/20 text-gray-400 rounded hover:bg-gray-600/30"
+                        className="text-xs px-2 py-1 bg-gray-600/20 text-muted rounded hover:bg-gray-600/30"
                       >
                         Demote
                       </button>
@@ -155,7 +155,7 @@ export default function AdminUsersPage() {
               className={`px-3 py-1 rounded text-sm ${
                 page === i + 1
                   ? "bg-primary text-white"
-                  : "bg-gray-800 text-gray-400"
+                  : "bg-surface text-muted"
               }`}
             >
               {i + 1}

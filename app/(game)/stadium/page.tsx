@@ -10,8 +10,8 @@ import { getStadiumLevel, STADIUM_LEVELS } from "@/lib/stadium-levels";
 const Stadium3D = dynamic(() => import("@/components/shared/stadium-3d"), {
   ssr: false,
   loading: () => (
-    <div className="w-full aspect-[16/10] max-w-[720px] rounded-xl border border-gray-800 bg-[#0a0a0c] flex items-center justify-center">
-      <p className="text-gray-500 text-sm">Loading 3D stadium...</p>
+    <div className="w-full aspect-[16/10] max-w-[720px] rounded-xl border border-border bg-bg flex items-center justify-center">
+      <p className="text-subtle text-sm">Loading 3D stadium...</p>
     </div>
   ),
 });
@@ -97,7 +97,7 @@ export default function StadiumPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Stadium & Facilities</h1>
-        <p className="text-gray-400 text-sm">
+        <p className="text-muted text-sm">
           Capacity: {data.club.stadiumCapacity.toLocaleString()} · Budget: €{data.club.budget.toLocaleString()}
         </p>
       </div>
@@ -107,19 +107,19 @@ export default function StadiumPage() {
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-lg font-bold text-accent">{displayLevel.name}</h2>
-            <p className="text-sm text-gray-400">{displayLevel.description}</p>
+            <p className="text-sm text-muted">{displayLevel.description}</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setStadiumTheme(stadiumTheme === "dark" ? "light" : "dark")}
-              className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+              className="p-2 rounded-lg bg-surface hover:bg-surface-hover transition-colors"
               title={stadiumTheme === "dark" ? "Switch to day view" : "Switch to night view"}
             >
               {stadiumTheme === "dark" ? <Sun size={16} className="text-yellow-400" /> : <Moon size={16} className="text-blue-300" />}
             </button>
             <div className="text-right">
               <p className="text-2xl font-bold text-primary">Lvl {displayLevel.level}</p>
-              <p className="text-xs text-gray-500">{displayLevel.capacity.toLocaleString()} seats</p>
+              <p className="text-xs text-subtle">{displayLevel.capacity.toLocaleString()} seats</p>
             </div>
           </div>
         </div>
@@ -133,7 +133,7 @@ export default function StadiumPage() {
           <button
             onClick={() => setPreviewLevel(Math.max(1, (previewLevel ?? currentLevel.level) - 1))}
             disabled={(previewLevel ?? currentLevel.level) <= 1}
-            className="p-1 text-gray-400 hover:text-white disabled:opacity-20"
+            className="p-1 text-muted hover:text-white disabled:opacity-20"
           >
             <ChevronLeft size={20} />
           </button>
@@ -151,7 +151,7 @@ export default function StadiumPage() {
                     ? "bg-accent/20 text-accent border border-accent/40"
                     : sl.level <= currentLevel.level
                     ? "bg-primary/20 text-primary"
-                    : "bg-gray-800 text-gray-600"
+                    : "bg-surface text-subtle"
                 )}
               >
                 {sl.level}
@@ -162,14 +162,14 @@ export default function StadiumPage() {
           <button
             onClick={() => setPreviewLevel(Math.min(20, (previewLevel ?? currentLevel.level) + 1))}
             disabled={(previewLevel ?? currentLevel.level) >= 20}
-            className="p-1 text-gray-400 hover:text-white disabled:opacity-20"
+            className="p-1 text-muted hover:text-white disabled:opacity-20"
           >
             <ChevronRight size={20} />
           </button>
         </div>
 
         {previewLevel !== null && previewLevel !== currentLevel.level && (
-          <p className="text-center text-xs text-gray-500 mt-2">
+          <p className="text-center text-xs text-subtle mt-2">
             Previewing Level {previewLevel} — your stadium is Level {currentLevel.level}
           </p>
         )}
@@ -177,7 +177,7 @@ export default function StadiumPage() {
 
       {/* Stadium Upgrade Card */}
       <div className="card">
-        <h2 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
+        <h2 className="text-sm font-medium text-muted mb-3 flex items-center gap-2">
           <Building size={14} /> Stadium Upgrade
         </h2>
 
@@ -187,7 +187,7 @@ export default function StadiumPage() {
               <p className="text-sm font-medium">
                 Upgrading to Level {data.stadiumUpgrade.toLevel}
               </p>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
+              <div className="flex items-center gap-2 text-xs text-subtle">
                 <Clock size={12} />
                 {Math.max(
                   0,
@@ -197,7 +197,7 @@ export default function StadiumPage() {
                 )}h remaining
               </div>
             </div>
-            <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+            <div className="h-2 bg-surface rounded-full overflow-hidden">
               <div
                 className="h-full bg-accent rounded-full transition-all animate-pulse"
                 style={{
@@ -224,7 +224,7 @@ export default function StadiumPage() {
         ) : isMaxed ? (
           <div className="text-center py-4">
             <p className="text-accent font-bold text-lg">Max Level Reached</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-subtle">
               {currentLevel.name} — {currentLevel.capacity.toLocaleString()} seats
             </p>
           </div>
@@ -236,10 +236,10 @@ export default function StadiumPage() {
                   <p className="text-sm font-medium">
                     Level {currentLevel.level} → {nextLevel.level}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-subtle">
                     {currentLevel.name} → {nextLevel.name}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-subtle">
                     {currentLevel.capacity.toLocaleString()} → {nextLevel.capacity.toLocaleString()} seats
                   </p>
                 </div>
@@ -293,7 +293,7 @@ export default function StadiumPage() {
       {/* Active Facility Upgrades */}
       {data.facilityUpgrades.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-sm font-medium text-gray-400 flex items-center gap-2">
+          <h2 className="text-sm font-medium text-muted flex items-center gap-2">
             <Clock size={14} /> In Progress
           </h2>
           {data.facilityUpgrades.map((u) => {
@@ -303,7 +303,7 @@ export default function StadiumPage() {
                 <Wrench size={16} className="text-accent" />
                 <div className="flex-1">
                   <p className="text-sm font-medium capitalize">{u.facility} → Level {u.toLevel}</p>
-                  <p className="text-xs text-gray-500">{hours}h remaining</p>
+                  <p className="text-xs text-subtle">{hours}h remaining</p>
                 </div>
               </div>
             );
@@ -313,7 +313,7 @@ export default function StadiumPage() {
 
       {/* Facilities */}
       <div>
-        <h2 className="text-sm font-medium text-gray-400 mb-2">Facilities</h2>
+        <h2 className="text-sm font-medium text-muted mb-2">Facilities</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {Object.entries(data.facilities).map(([facility, config]) => {
             const level = facilityLevels[facility] ?? 0;
@@ -325,7 +325,7 @@ export default function StadiumPage() {
               <div key={facility} className="card">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-medium capitalize">{facility}</h3>
-                  <span className="text-sm text-gray-400">Level {level}/{config.maxLevel}</span>
+                  <span className="text-sm text-muted">Level {level}/{config.maxLevel}</span>
                 </div>
                 <div className="flex gap-1 mb-3">
                   {Array.from({ length: config.maxLevel }).map((_, i) => (
@@ -333,12 +333,12 @@ export default function StadiumPage() {
                       key={i}
                       className={cn(
                         "h-2 flex-1 rounded",
-                        i < level ? "bg-accent" : "bg-gray-800"
+                        i < level ? "bg-accent" : "bg-surface"
                       )}
                     />
                   ))}
                 </div>
-                <p className="text-xs text-gray-500 mb-2">{config.hoursPerLevel}h build time</p>
+                <p className="text-xs text-subtle mb-2">{config.hoursPerLevel}h build time</p>
                 <button
                   onClick={() => action.mutate({ action: "facility", facility })}
                   disabled={isFacilityMaxed || isFacilityUpgrading || data.club.budget < cost}

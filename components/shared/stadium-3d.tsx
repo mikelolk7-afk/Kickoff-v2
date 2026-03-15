@@ -885,7 +885,7 @@ export default function Stadium3D({ level, theme = "dark" }: Stadium3DProps) {
 
   return (
     <div
-      className="w-full aspect-[16/10] max-w-[720px] rounded-xl border border-gray-800 overflow-hidden"
+      className="w-full aspect-[16/10] max-w-[720px] rounded-xl border border-border overflow-hidden"
       style={{ backgroundColor: t.bg }}
     >
       <Canvas

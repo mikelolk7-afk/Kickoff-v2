@@ -49,7 +49,7 @@ export default function AdminDashboard() {
   };
 
   if (loading) {
-    return <div className="text-gray-400">Loading admin stats...</div>;
+    return <div className="text-muted">Loading admin stats...</div>;
   }
 
   return (
@@ -73,9 +73,9 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      <div className="bg-panel border border-gray-800 rounded-lg p-6">
+      <div className="bg-panel border border-border rounded-lg p-6">
         <h3 className="font-semibold mb-3">Season Management</h3>
-        <p className="text-gray-400 text-sm mb-4">
+        <p className="text-muted text-sm mb-4">
           Trigger season end for all divisions. This will calculate standings,
           handle promotions/relegations, and generate new seasons.
         </p>
@@ -87,7 +87,7 @@ export default function AdminDashboard() {
           {seasonLoading ? "Processing..." : "Trigger Season End"}
         </button>
         {seasonResult && (
-          <p className="mt-3 text-sm text-gray-300">{seasonResult}</p>
+          <p className="mt-3 text-sm text-foreground">{seasonResult}</p>
         )}
       </div>
     </div>
@@ -104,8 +104,8 @@ function StatCard({
   highlight?: boolean;
 }) {
   return (
-    <div className="bg-panel border border-gray-800 rounded-lg p-4">
-      <div className="text-gray-400 text-xs uppercase mb-1">{label}</div>
+    <div className="bg-panel border border-border rounded-lg p-4">
+      <div className="text-muted text-xs uppercase mb-1">{label}</div>
       <div
         className={`text-2xl font-bold ${highlight ? "text-red-400" : "text-white"}`}
       >

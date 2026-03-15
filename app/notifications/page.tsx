@@ -67,7 +67,7 @@ export default function NotificationsPage() {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Notifications</h1>
-        <div className="text-gray-400">Loading...</div>
+        <div className="text-muted">Loading...</div>
       </div>
     );
   }
@@ -97,16 +97,16 @@ export default function NotificationsPage() {
       </div>
 
       {/* Notifications List */}
-      <div className="bg-panel rounded-lg border border-gray-800 divide-y divide-gray-800">
+      <div className="bg-panel rounded-lg border border-border divide-y divide-border">
         {notifications.length === 0 ? (
-          <div className="p-8 text-center text-gray-400">
+          <div className="p-8 text-center text-muted">
             No notifications yet.
           </div>
         ) : (
           notifications.map((notif) => (
             <div
               key={notif.id}
-              className={`px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-gray-800/30 ${
+              className={`px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-surface/30 ${
                 !notif.isRead ? "bg-primary/5" : ""
               }`}
               onClick={() => {
@@ -118,8 +118,8 @@ export default function NotificationsPage() {
               )}
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-sm">{notif.title}</div>
-                <div className="text-gray-400 text-sm">{notif.body}</div>
-                <div className="text-gray-600 text-xs mt-1">
+                <div className="text-muted text-sm">{notif.body}</div>
+                <div className="text-subtle text-xs mt-1">
                   {new Date(notif.createdAt).toLocaleDateString()} at{" "}
                   {new Date(notif.createdAt).toLocaleTimeString()}
                 </div>
@@ -131,7 +131,7 @@ export default function NotificationsPage() {
 
       {/* Preferences */}
       {prefs && (
-        <div className="bg-panel rounded-lg border border-gray-800 p-6">
+        <div className="bg-panel rounded-lg border border-border p-6">
           <h3 className="font-semibold mb-4">Notification Preferences</h3>
           <div className="space-y-3">
             {(

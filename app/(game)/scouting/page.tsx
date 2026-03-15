@@ -88,7 +88,7 @@ export default function ScoutingPage() {
 
       {/* Send Scout */}
       <div className="card space-y-3">
-        <h2 className="text-sm font-medium text-gray-400">Send Scout</h2>
+        <h2 className="text-sm font-medium text-muted">Send Scout</h2>
         <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
           {REGIONS.map((r) => (
             <button
@@ -96,7 +96,7 @@ export default function ScoutingPage() {
               onClick={() => setSelectedRegion(r)}
               className={cn(
                 "px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1",
-                selectedRegion === r ? "bg-primary text-white" : "bg-bg text-gray-400"
+                selectedRegion === r ? "bg-primary text-white" : "bg-bg text-muted"
               )}
             >
               <MapPin size={12} />
@@ -126,7 +126,7 @@ export default function ScoutingPage() {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-sm">{scout.name}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-subtle">
                       {isBusy ? "On assignment" : "Available"}
                     </p>
                   </div>
@@ -135,14 +135,14 @@ export default function ScoutingPage() {
             })}
           </div>
         ) : (
-          <p className="text-gray-500 text-sm">No scouts available. Hire scouts from the staff section.</p>
+          <p className="text-subtle text-sm">No scouts available. Hire scouts from the staff section.</p>
         )}
       </div>
 
       {/* Active Assignments */}
       {activeAssignments.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-sm font-medium text-gray-400">Active Assignments</h2>
+          <h2 className="text-sm font-medium text-muted">Active Assignments</h2>
           {activeAssignments.map((a) => {
             const remaining = Math.max(0, new Date(a.completesAt).getTime() - Date.now());
             const hoursLeft = Math.ceil(remaining / (1000 * 60 * 60));
@@ -153,7 +153,7 @@ export default function ScoutingPage() {
                   <p className="text-sm font-medium">
                     {a.scout.name} scouting {a.region}
                   </p>
-                  <p className="text-xs text-gray-500">{hoursLeft}h remaining</p>
+                  <p className="text-xs text-subtle">{hoursLeft}h remaining</p>
                 </div>
               </div>
             );
@@ -164,7 +164,7 @@ export default function ScoutingPage() {
       {/* Reports */}
       {completedReports.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-medium text-gray-400">Scout Reports</h2>
+          <h2 className="text-sm font-medium text-muted">Scout Reports</h2>
           {completedReports.map((a) => (
             <div key={a.id} className="card space-y-2">
               <p className="text-sm font-medium">
@@ -174,13 +174,13 @@ export default function ScoutingPage() {
                 {(a.report?.players ?? []).map((p, i) => (
                   <div key={i} className="flex items-center gap-3 bg-bg rounded-lg p-2">
                     <span className="text-lg font-bold text-primary w-8">{p.reportedOverall}</span>
-                    <span className="text-xs bg-gray-700 px-1.5 py-0.5 rounded">{p.position}</span>
+                    <span className="text-xs bg-surface px-1.5 py-0.5 rounded">{p.position}</span>
                     <div className="flex-1">
                       <p className="text-sm">
                         {p.name}
                         {p.isHiddenGem && <span className="text-accent ml-1">★ Hidden Gem</span>}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-subtle">
                         {p.nationality} · {p.age}y · ~€{(p.estimatedValue / 1000).toFixed(0)}k
                       </p>
                     </div>

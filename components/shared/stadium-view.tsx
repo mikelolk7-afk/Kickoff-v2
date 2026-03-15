@@ -271,7 +271,7 @@ export default function StadiumView({
       ref={canvasRef}
       width={width}
       height={height}
-      className="w-full max-w-[640px] rounded-lg border border-gray-800"
+      className="w-full max-w-[640px] rounded-lg border border-border"
     />
   );
 }

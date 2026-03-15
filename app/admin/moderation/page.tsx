@@ -61,7 +61,7 @@ export default function ModerationPage() {
             className={`px-3 py-1.5 rounded-lg text-sm ${
               filter === s
                 ? "bg-red-600 text-white"
-                : "bg-gray-800 text-gray-400"
+                : "bg-surface text-muted"
             }`}
           >
             {s.replace("_", " ")}
@@ -70,36 +70,36 @@ export default function ModerationPage() {
       </div>
 
       {loading ? (
-        <div className="text-gray-400">Loading...</div>
+        <div className="text-muted">Loading...</div>
       ) : reports.length === 0 ? (
-        <div className="text-gray-500 text-sm">No reports with status: {filter}</div>
+        <div className="text-subtle text-sm">No reports with status: {filter}</div>
       ) : (
         <div className="space-y-3">
           {reports.map((r) => (
             <div
               key={r.id}
-              className="bg-panel border border-gray-800 rounded-lg p-4"
+              className="bg-panel border border-border rounded-lg p-4"
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <span className="text-gray-400 text-xs">
+                  <span className="text-muted text-xs">
                     Reported by: {r.reportedBy.name ?? r.reportedBy.email}
                   </span>
-                  <span className="text-gray-600 mx-2">|</span>
-                  <span className="text-gray-400 text-xs">
+                  <span className="text-subtle mx-2">|</span>
+                  <span className="text-muted text-xs">
                     Target: {r.targetUser.name ?? r.targetUser.email}
                     {r.targetUser.isBanned && (
                       <span className="text-red-400 ml-1">(banned)</span>
                     )}
                   </span>
                 </div>
-                <span className="text-gray-500 text-xs">
+                <span className="text-subtle text-xs">
                   {new Date(r.createdAt).toLocaleDateString()}
                 </span>
               </div>
               <p className="text-sm mb-3">{r.reason}</p>
               {r.resolution && (
-                <p className="text-xs text-gray-500 mb-3">
+                <p className="text-xs text-subtle mb-3">
                   Resolution: {r.resolution}
                 </p>
               )}
@@ -125,7 +125,7 @@ export default function ModerationPage() {
                   </button>
                   <button
                     onClick={() => handleResolve(r.id, "dismiss")}
-                    className="text-xs px-3 py-1.5 bg-gray-600/20 text-gray-400 rounded hover:bg-gray-600/30"
+                    className="text-xs px-3 py-1.5 bg-gray-600/20 text-muted rounded hover:bg-gray-600/30"
                   >
                     Dismiss
                   </button>

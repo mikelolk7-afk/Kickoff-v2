@@ -27,8 +27,8 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-bg flex">
-      <aside className="w-56 bg-panel border-r border-gray-800 h-screen fixed left-0 top-0">
-        <div className="p-4 border-b border-gray-800">
+      <aside className="w-56 bg-panel border-r border-border h-screen fixed left-0 top-0">
+        <div className="p-4 border-b border-border">
           <h1 className="text-xl font-bold text-red-400">Admin Panel</h1>
         </div>
         <nav className="p-3 space-y-1">
@@ -45,7 +45,7 @@ export default function AdminLayout({
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                   isActive
                     ? "bg-red-500/15 text-red-400"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-gray-800/50"
+                    : "text-muted hover:text-foreground hover:bg-surface"
                 )}
               >
                 <item.icon size={18} />
@@ -54,10 +54,10 @@ export default function AdminLayout({
             );
           })}
         </nav>
-        <div className="p-3 border-t border-gray-800 mt-auto absolute bottom-0 w-full">
+        <div className="p-3 border-t border-border mt-auto absolute bottom-0 w-full">
           <Link
             href="/dashboard"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted hover:text-foreground hover:bg-surface transition-colors"
           >
             <ArrowLeft size={18} />
             Back to Game

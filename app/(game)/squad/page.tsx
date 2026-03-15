@@ -36,8 +36,8 @@ const POSITION_COLORS: Record<string, string> = {
 function StatBar({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-gray-400 w-20">{label}</span>
-      <div className="flex-1 bg-gray-800 rounded-full h-2">
+      <span className="text-xs text-muted w-20">{label}</span>
+      <div className="flex-1 bg-surface rounded-full h-2">
         <div
           className={cn(
             "h-2 rounded-full",
@@ -80,13 +80,13 @@ function PlayerCard({ player, onClick }: { player: Player; onClick: () => void }
               </span>
             )}
           </div>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-muted">
             {player.nationality} · {player.age}y ·{" "}
             {(player.wage / 1000).toFixed(1)}k/w
           </p>
         </div>
         <div className="text-right">
-          <div className="text-xs text-gray-400">Form</div>
+          <div className="text-xs text-muted">Form</div>
           <div
             className={cn(
               "text-sm font-medium",
@@ -122,10 +122,10 @@ function PlayerDetail({ player }: { player: Player }) {
         </div>
         <div>
           <h2 className="text-xl font-bold">{player.name}</h2>
-          <p className="text-gray-400">
+          <p className="text-muted">
             {player.nationality} · {player.age} years
           </p>
-          <p className="text-gray-500 text-sm">
+          <p className="text-subtle text-sm">
             Potential: {player.potential} · Wage: €{player.wage.toLocaleString()}/w
           </p>
         </div>
@@ -142,9 +142,9 @@ function PlayerDetail({ player }: { player: Player }) {
         <StatBar label="Position" value={player.positioning} />
       </div>
 
-      <div className="flex gap-4 pt-2 border-t border-gray-800">
+      <div className="flex gap-4 pt-2 border-t border-border">
         <div className="text-center">
-          <div className="text-xs text-gray-400">Morale</div>
+          <div className="text-xs text-muted">Morale</div>
           <div
             className={cn(
               "text-lg font-bold",
@@ -159,7 +159,7 @@ function PlayerDetail({ player }: { player: Player }) {
           </div>
         </div>
         <div className="text-center">
-          <div className="text-xs text-gray-400">Form</div>
+          <div className="text-xs text-muted">Form</div>
           <div
             className={cn(
               "text-lg font-bold",
@@ -175,7 +175,7 @@ function PlayerDetail({ player }: { player: Player }) {
         </div>
         {player.injuredUntil && new Date(player.injuredUntil) > new Date() && (
           <div className="text-center">
-            <div className="text-xs text-gray-400">Injured Until</div>
+            <div className="text-xs text-muted">Injured Until</div>
             <div className="text-lg font-bold text-red-400">
               {new Date(player.injuredUntil).toLocaleDateString()}
             </div>
@@ -214,7 +214,7 @@ export default function SquadPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Squad</h1>
-        <span className="text-gray-400 text-sm">{players?.length} players</span>
+        <span className="text-muted text-sm">{players?.length} players</span>
       </div>
 
       {/* Position filter */}
@@ -227,7 +227,7 @@ export default function SquadPage() {
               "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
               posFilter === pos
                 ? "bg-primary text-white"
-                : "bg-panel text-gray-400 hover:text-gray-200"
+                : "bg-panel text-muted hover:text-foreground"
             )}
           >
             {pos ?? "All"}

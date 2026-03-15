@@ -75,7 +75,7 @@ export default function LeaguePage() {
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold">{data.division.name}</h1>
-        <p className="text-gray-400">Season {data.season.number}</p>
+        <p className="text-muted">Season {data.season.number}</p>
       </div>
 
       {/* Tabs */}
@@ -84,7 +84,7 @@ export default function LeaguePage() {
           onClick={() => setTab("table")}
           className={cn(
             "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-            tab === "table" ? "bg-primary text-white" : "bg-panel text-gray-400"
+            tab === "table" ? "bg-primary text-white" : "bg-panel text-muted"
           )}
         >
           Table
@@ -93,7 +93,7 @@ export default function LeaguePage() {
           onClick={() => setTab("fixtures")}
           className={cn(
             "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-            tab === "fixtures" ? "bg-primary text-white" : "bg-panel text-gray-400"
+            tab === "fixtures" ? "bg-primary text-white" : "bg-panel text-muted"
           )}
         >
           Fixtures
@@ -104,7 +104,7 @@ export default function LeaguePage() {
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-gray-400 border-b border-gray-800">
+              <tr className="text-muted border-b border-border">
                 <th className="text-left py-3 px-2 w-8">#</th>
                 <th className="text-left py-3 px-2">Club</th>
                 <th className="text-center py-3 px-2">P</th>
@@ -125,13 +125,13 @@ export default function LeaguePage() {
                   <tr
                     key={row.id}
                     className={cn(
-                      "border-b border-gray-800/50 transition-colors",
+                      "border-b border-border transition-colors",
                       isMyClub && "bg-primary/10",
                       i < 2 && "border-l-2 border-l-green-500",
                       i >= data.table.length - 2 && "border-l-2 border-l-red-500"
                     )}
                   >
-                    <td className="py-2.5 px-2 text-gray-500">{i + 1}</td>
+                    <td className="py-2.5 px-2 text-subtle">{i + 1}</td>
                     <td className="py-2.5 px-2">
                       <div className="flex items-center gap-2">
                         <div
@@ -151,16 +151,16 @@ export default function LeaguePage() {
                         )}
                       </div>
                     </td>
-                    <td className="text-center py-2.5 px-2 text-gray-400">{row.played}</td>
+                    <td className="text-center py-2.5 px-2 text-muted">{row.played}</td>
                     <td className="text-center py-2.5 px-2 text-green-400">{row.won}</td>
-                    <td className="text-center py-2.5 px-2 text-gray-300">{row.drawn}</td>
+                    <td className="text-center py-2.5 px-2 text-foreground">{row.drawn}</td>
                     <td className="text-center py-2.5 px-2 text-red-400">{row.lost}</td>
-                    <td className="text-center py-2.5 px-2 text-gray-400">{row.goalsFor}</td>
-                    <td className="text-center py-2.5 px-2 text-gray-400">{row.goalsAgainst}</td>
+                    <td className="text-center py-2.5 px-2 text-muted">{row.goalsFor}</td>
+                    <td className="text-center py-2.5 px-2 text-muted">{row.goalsAgainst}</td>
                     <td
                       className={cn(
                         "text-center py-2.5 px-2",
-                        gd > 0 ? "text-green-400" : gd < 0 ? "text-red-400" : "text-gray-400"
+                        gd > 0 ? "text-green-400" : gd < 0 ? "text-red-400" : "text-muted"
                       )}
                     >
                       {gd > 0 ? `+${gd}` : gd}
@@ -171,7 +171,7 @@ export default function LeaguePage() {
               })}
             </tbody>
           </table>
-          <div className="flex gap-4 text-xs text-gray-500 mt-3 px-2">
+          <div className="flex gap-4 text-xs text-subtle mt-3 px-2">
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 bg-green-500 rounded" /> Promotion
             </span>
@@ -189,7 +189,7 @@ export default function LeaguePage() {
         <div className="space-y-6">
           {Object.entries(fixturesByWeek).map(([week, fixtures]) => (
             <div key={week}>
-              <h3 className="text-sm font-medium text-gray-400 mb-2">
+              <h3 className="text-sm font-medium text-muted mb-2">
                 Match Week {week}
               </h3>
               <div className="space-y-1">
@@ -220,7 +220,7 @@ export default function LeaguePage() {
                             {f.homeScore} – {f.awayScore}
                           </span>
                         ) : (
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-subtle">
                             {new Date(f.scheduledAt).toLocaleDateString()}
                           </span>
                         )}

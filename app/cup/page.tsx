@@ -42,7 +42,7 @@ export default function CupPage() {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Cup</h1>
-        <div className="text-gray-400">Loading cup data...</div>
+        <div className="text-muted">Loading cup data...</div>
       </div>
     );
   }
@@ -53,9 +53,9 @@ export default function CupPage() {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Cup</h1>
-        <div className="bg-panel rounded-lg border border-gray-800 p-8 text-center">
-          <p className="text-gray-400">No active cup competition.</p>
-          <p className="text-gray-500 text-sm mt-2">
+        <div className="bg-panel rounded-lg border border-border p-8 text-center">
+          <p className="text-muted">No active cup competition.</p>
+          <p className="text-subtle text-sm mt-2">
             The cup draw will be generated at the start of each season.
           </p>
         </div>
@@ -76,13 +76,13 @@ export default function CupPage() {
         {cup.rounds.map((round) => (
           <div
             key={round.id}
-            className="bg-panel rounded-lg border border-gray-800"
+            className="bg-panel rounded-lg border border-border"
           >
-            <div className="px-4 py-3 border-b border-gray-800">
+            <div className="px-4 py-3 border-b border-border">
               <h2 className="font-semibold">{round.name}</h2>
             </div>
 
-            <div className="divide-y divide-gray-800">
+            <div className="divide-y divide-border">
               {round.fixtures.map((fixture) => (
                 <div
                   key={fixture.id}
@@ -106,7 +106,7 @@ export default function CupPage() {
                         {fixture.homeScore} - {fixture.awayScore}
                       </span>
                     ) : (
-                      <span className="text-gray-500 text-sm">vs</span>
+                      <span className="text-subtle text-sm">vs</span>
                     )}
                   </div>
 

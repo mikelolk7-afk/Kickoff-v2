@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import {
   LayoutDashboard,
   Users,
@@ -19,6 +20,8 @@ import {
   User,
   Bell,
   MessageSquare,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -50,16 +53,17 @@ const MOBILE_NAV = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
 
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-56 bg-panel border-r border-gray-800 h-screen fixed left-0 top-0">
-        <div className="p-4 border-b border-gray-800">
+      <aside className="hidden md:flex flex-col w-56 bg-panel border-r border-border h-screen fixed left-0 top-0">
+        <div className="p-4 border-b border-border">
           <h1 className="text-xl font-bold text-primary">Kickoff Manager</h1>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (
@@ -70,7 +74,7 @@ export function Sidebar() {
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                   isActive
                     ? "bg-primary/15 text-primary"
-                    : "text-gray-400 hover:text-gray-200 hover:bg-gray-800/50"
+                    : "text-muted hover:text-foreground hover:bg-surface"
                 )}
               >
                 <item.icon size={18} />
@@ -80,10 +84,19 @@ export function Sidebar() {
           })}
         </nav>
 
-        <div className="p-3 border-t border-gray-800">
+        <div className="p-3 border-t border-border space-y-1">
+          {/* Theme toggle */}
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted hover:text-foreground hover:bg-surface w-full transition-colors"
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            {theme === "dark" ? "Light Mode" : "Dark Mode"}
+          </button>
+
+          {/* Sign out */}
           <button
             onClick={async () => {
-              // Fetch CSRF token then sign out
               const res = await fetch("/api/auth/csrf");
               const { csrfToken } = await res.json();
               await fetch("/api/auth/signout", {
@@ -93,7 +106,7 @@ export function Sidebar() {
               });
               window.location.href = "/login";
             }}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-gray-800/50 w-full transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted hover:text-red-400 hover:bg-surface w-full transition-colors"
           >
             <LogOut size={18} />
             Sign Out
@@ -102,7 +115,7 @@ export function Sidebar() {
       </aside>
 
       {/* Mobile bottom tab bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-panel border-t border-gray-800 z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-panel border-t border-border z-50">
         <div className="flex justify-around py-2">
           {MOBILE_NAV.map((item) => {
             const isActive = pathname.startsWith(item.href);
@@ -112,7 +125,7 @@ export function Sidebar() {
                 href={item.href}
                 className={cn(
                   "flex flex-col items-center gap-1 px-3 py-1 text-xs font-medium transition-colors",
-                  isActive ? "text-primary" : "text-gray-500"
+                  isActive ? "text-primary" : "text-subtle"
                 )}
               >
                 <item.icon size={20} />
