@@ -514,6 +514,8 @@ export async function browseAuctionMarket(filters?: {
   maxOverall?: number;
   page?: number;
   pageSize?: number;
+  sort?: string;
+  order?: "asc" | "desc";
 }) {
   const page = filters?.page ?? 1;
   const pageSize = filters?.pageSize ?? 20;
@@ -539,6 +541,17 @@ export async function browseAuctionMarket(filters?: {
     where.player = playerWhere;
   }
 
+  // Build sort order — default by deadline soonest first
+  const sortField = filters?.sort;
+  const sortDir = filters?.order ?? "asc";
+  let orderBy: Record<string, unknown> = { expiresAt: "asc" };
+  if (sortField === "overall") orderBy = { player: { overall: sortDir } };
+  else if (sortField === "age") orderBy = { player: { age: sortDir } };
+  else if (sortField === "name") orderBy = { player: { name: sortDir } };
+  else if (sortField === "price") orderBy = { askingPrice: sortDir };
+  else if (sortField === "position") orderBy = { player: { position: sortDir } };
+  else if (sortField === "deadline") orderBy = { expiresAt: sortDir };
+
   const [listings, total] = await Promise.all([
     db.transferListing.findMany({
       where,
@@ -553,7 +566,7 @@ export async function browseAuctionMarket(filters?: {
         },
         _count: { select: { offers: true } },
       },
-      orderBy: { expiresAt: "asc" },
+      orderBy,
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),

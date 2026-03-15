@@ -1,9 +1,21 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { Gavel, Timer, TrendingUp } from "lucide-react";
+import {
+  Gavel,
+  Timer,
+  TrendingUp,
+  ChevronUp,
+  ChevronDown,
+  ArrowUpDown,
+  Search,
+  Star,
+  ShoppingCart,
+  Send,
+  ListFilter,
+} from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -56,7 +68,87 @@ interface AuctionItem {
   timeRemainingMs: number;
 }
 
-// ─── Countdown Hook ──────────────────────────────────────────
+// ─── Position badge colors ──────────────────────────────────
+
+const POS_COLORS: Record<string, string> = {
+  GK: "bg-amber-600 text-white",
+  DEF: "bg-blue-600 text-white",
+  MID: "bg-emerald-600 text-white",
+  FWD: "bg-red-600 text-white",
+};
+
+function PositionBadge({ position }: { position: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide",
+        POS_COLORS[position] ?? "bg-gray-600 text-white"
+      )}
+    >
+      {position}
+    </span>
+  );
+}
+
+// ─── Quality Stars ──────────────────────────────────────────
+
+function QualityStars({ overall }: { overall: number }) {
+  // Map 40-99 → 1-5 stars
+  const stars = Math.min(5, Math.max(1, Math.round((overall - 40) / 12)));
+  const halfStar = overall % 12 >= 6 && stars < 5;
+
+  return (
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star
+          key={i}
+          size={12}
+          className={cn(
+            i < stars
+              ? "text-yellow-400 fill-yellow-400"
+              : i === stars && halfStar
+              ? "text-yellow-400 fill-yellow-400/50"
+              : "text-gray-600"
+          )}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Overall Rating Badge ───────────────────────────────────
+
+function OverallBadge({ overall }: { overall: number }) {
+  const color =
+    overall >= 85
+      ? "text-yellow-400 border-yellow-400/50 bg-yellow-400/10"
+      : overall >= 75
+      ? "text-green-400 border-green-400/50 bg-green-400/10"
+      : overall >= 65
+      ? "text-blue-400 border-blue-400/50 bg-blue-400/10"
+      : "text-gray-400 border-gray-600 bg-gray-800";
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center justify-center w-9 h-9 rounded-lg border text-sm font-bold",
+        color
+      )}
+    >
+      {overall}
+    </span>
+  );
+}
+
+// ─── Money formatter ────────────────────────────────────────
+
+function formatMoney(amount: number): string {
+  if (amount >= 1_000_000) return `€${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `€${(amount / 1_000).toFixed(0)}K`;
+  return `€${amount}`;
+}
+
+// ─── Countdown Hook ─────────────────────────────────────────
 
 function useCountdown(targetMs: number) {
   const [remaining, setRemaining] = useState(Math.max(0, targetMs - Date.now()));
@@ -70,170 +162,269 @@ function useCountdown(targetMs: number) {
 
   const minutes = Math.floor(remaining / 60000);
   const seconds = Math.floor((remaining % 60000) / 1000);
-  return { remaining, display: `${minutes}:${seconds.toString().padStart(2, "0")}` };
+  return { remaining, minutes, seconds, display: `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}` };
 }
 
-function CountdownBadge({ expiresAt }: { expiresAt: string }) {
-  const { remaining, display } = useCountdown(new Date(expiresAt).getTime());
+// ─── Countdown Timer (large clock style) ────────────────────
+
+function CountdownClock({ expiresAt }: { expiresAt: string }) {
+  const { remaining, minutes, seconds } = useCountdown(new Date(expiresAt).getTime());
   const isUrgent = remaining < 60000;
-  return (
-    <span className={cn(
-      "font-mono text-xs px-1.5 py-0.5 rounded",
-      isUrgent ? "bg-red-500/20 text-red-400" : "bg-gray-800 text-gray-400"
-    )}>
-      {display}
-    </span>
-  );
-}
-
-// ─── Auction Card ────────────────────────────────────────────
-
-function AuctionCard({
-  auction,
-  onBid,
-  isBidding,
-}: {
-  auction: AuctionItem;
-  onBid: (auctionId: string, amount: number, wage: number) => void;
-  isBidding: boolean;
-}) {
-  const [bidAmount, setBidAmount] = useState(auction.minBid);
-  const [showDetail, setShowDetail] = useState(false);
-
-  useEffect(() => {
-    setBidAmount(auction.minBid);
-  }, [auction.minBid]);
 
   return (
-    <div className="card">
-      <div className="flex items-center gap-4">
-        {/* Player rating circle */}
-        <div className="flex-shrink-0 text-center">
-          <span className="text-xl font-bold text-primary">{auction.player.overall}</span>
-          <p className="text-xs text-gray-400">{auction.player.position}</p>
-        </div>
-
-        {/* Player info */}
-        <div className="flex-1 min-w-0">
-          <button
-            onClick={() => setShowDetail(!showDetail)}
-            className="font-medium hover:text-accent transition-colors text-left"
-          >
-            {auction.player.name}
-          </button>
-          <p className="text-xs text-gray-400">
-            {auction.player.nationality} · {auction.player.age}y · Pot: {auction.player.potential}
-          </p>
-        </div>
-
-        {/* Auction info */}
-        <div className="text-right flex-shrink-0">
-          <div className="flex items-center gap-2 justify-end">
-            <Timer size={12} className="text-gray-500" />
-            <CountdownBadge expiresAt={auction.expiresAt} />
-          </div>
-          <p className="text-accent font-bold mt-1">
-            {auction.currentBid
-              ? `€${(auction.currentBid / 1000).toFixed(0)}k`
-              : `€${(auction.askingPrice / 1000).toFixed(0)}k`}
-          </p>
-          <p className="text-[10px] text-gray-500">
-            {auction.bidCount} bid{auction.bidCount !== 1 ? "s" : ""}
-            {auction.currentBid ? " · current" : " · start"}
-          </p>
-        </div>
-
-        {/* Quick bid button */}
-        <button
-          onClick={() => onBid(auction.id, auction.minBid, auction.player.wage)}
-          disabled={isBidding}
-          className="btn-primary text-sm flex-shrink-0"
-        >
-          <Gavel size={14} className="inline mr-1" />
-          €{(auction.minBid / 1000).toFixed(0)}k
-        </button>
-      </div>
-
-      {/* Expandable detail */}
-      {showDetail && (
-        <div className="mt-3 pt-3 border-t border-gray-800">
-          <div className="grid grid-cols-3 gap-2 text-xs mb-3">
-            <div className="text-center">
-              <p className="text-gray-500">PAC</p>
-              <p className="font-bold">{auction.player.pace}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-gray-500">SHO</p>
-              <p className="font-bold">{auction.player.shooting}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-gray-500">PAS</p>
-              <p className="font-bold">{auction.player.passing}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-gray-500">DEF</p>
-              <p className="font-bold">{auction.player.defending}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-gray-500">PHY</p>
-              <p className="font-bold">{auction.player.physicality}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-gray-500">Wage</p>
-              <p className="font-bold">€{auction.player.wage}/w</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <label className="text-xs text-gray-500">Custom Bid (€)</label>
-              <input
-                type="number"
-                value={bidAmount}
-                onChange={(e) => setBidAmount(Number(e.target.value))}
-                min={auction.minBid}
-                step={1000}
-                className="input-field text-sm w-full"
-              />
-            </div>
-            <button
-              onClick={() => onBid(auction.id, bidAmount, auction.player.wage)}
-              disabled={isBidding || bidAmount < auction.minBid}
-              className="btn-primary text-sm mt-4"
-            >
-              Place Bid
-            </button>
-          </div>
-          <div className="flex justify-between text-[10px] text-gray-600 mt-1">
-            <span>Min: €{(auction.minBid / 1000).toFixed(0)}k</span>
-            <span>Buy Now: €{(auction.buyNow / 1000).toFixed(0)}k</span>
-          </div>
-        </div>
-      )}
+    <div className={cn("flex items-center gap-0.5 font-mono text-xs", isUrgent ? "text-red-400" : "text-gray-400")}>
+      <Timer size={10} className="mr-0.5" />
+      <span className={cn("font-bold", isUrgent && "animate-pulse")}>
+        {String(minutes).padStart(2, "0")}
+      </span>
+      <span className={isUrgent ? "text-red-500" : "text-gray-600"}>:</span>
+      <span className={cn("font-bold", isUrgent && "animate-pulse")}>
+        {String(seconds).padStart(2, "0")}
+      </span>
     </div>
   );
 }
 
-// ─── Main Page ───────────────────────────────────────────────
+// ─── Sortable Header ────────────────────────────────────────
+
+function SortHeader({
+  label,
+  field,
+  currentSort,
+  currentOrder,
+  onSort,
+  className,
+}: {
+  label: string;
+  field: string;
+  currentSort: string;
+  currentOrder: "asc" | "desc";
+  onSort: (field: string) => void;
+  className?: string;
+}) {
+  const isActive = currentSort === field;
+
+  return (
+    <button
+      onClick={() => onSort(field)}
+      className={cn("flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold hover:text-white transition-colors", className, isActive ? "text-accent" : "text-gray-500")}
+    >
+      {label}
+      {isActive ? (
+        currentOrder === "asc" ? <ChevronUp size={10} /> : <ChevronDown size={10} />
+      ) : (
+        <ArrowUpDown size={9} className="opacity-40" />
+      )}
+    </button>
+  );
+}
+
+// ─── Auction Row ────────────────────────────────────────────
+
+function AuctionRow({
+  auction,
+  onBid,
+  onExpand,
+  isExpanded,
+  isBidding,
+}: {
+  auction: AuctionItem;
+  onBid: (auctionId: string, amount: number, wage: number) => void;
+  onExpand: (id: string) => void;
+  isExpanded: boolean;
+  isBidding: boolean;
+}) {
+  const [customBid, setCustomBid] = useState(auction.minBid);
+
+  useEffect(() => {
+    setCustomBid(auction.minBid);
+  }, [auction.minBid]);
+
+  return (
+    <>
+      <tr
+        onClick={() => onExpand(auction.id)}
+        className={cn(
+          "border-b border-gray-800/50 cursor-pointer transition-colors",
+          isExpanded ? "bg-gray-800/40" : "hover:bg-gray-800/20"
+        )}
+      >
+        {/* Name + Nationality */}
+        <td className="py-2.5 px-3">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-gray-500 w-5 text-center">{auction.player.nationality.slice(0, 3).toUpperCase()}</span>
+            <span className="font-medium text-sm truncate">{auction.player.name}</span>
+          </div>
+        </td>
+
+        {/* Position */}
+        <td className="py-2.5 px-2">
+          <PositionBadge position={auction.player.position} />
+        </td>
+
+        {/* Age */}
+        <td className="py-2.5 px-2 text-center text-sm">{auction.player.age}</td>
+
+        {/* Overall */}
+        <td className="py-2.5 px-2 text-center">
+          <OverallBadge overall={auction.player.overall} />
+        </td>
+
+        {/* Quality (stars) */}
+        <td className="py-2.5 px-2">
+          <QualityStars overall={auction.player.overall} />
+        </td>
+
+        {/* Value / Current bid */}
+        <td className="py-2.5 px-2 text-right">
+          <span className="font-bold text-accent text-sm">
+            {formatMoney(auction.currentBid ?? auction.askingPrice)}
+          </span>
+          {auction.bidCount > 0 && (
+            <p className="text-[10px] text-gray-500">{auction.bidCount} bid{auction.bidCount !== 1 ? "s" : ""}</p>
+          )}
+        </td>
+
+        {/* Deadline */}
+        <td className="py-2.5 px-2 text-center">
+          <CountdownClock expiresAt={auction.expiresAt} />
+        </td>
+
+        {/* Quick bid */}
+        <td className="py-2.5 px-3 text-right">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onBid(auction.id, auction.minBid, auction.player.wage);
+            }}
+            disabled={isBidding}
+            className="btn-primary text-xs px-3 py-1.5 inline-flex items-center gap-1"
+          >
+            <Gavel size={11} />
+            {formatMoney(auction.minBid)}
+          </button>
+        </td>
+      </tr>
+
+      {/* Expanded detail row */}
+      {isExpanded && (
+        <tr className="bg-gray-800/30 border-b border-gray-800/50">
+          <td colSpan={8} className="px-4 py-3">
+            <div className="flex gap-6">
+              {/* Attributes grid */}
+              <div className="grid grid-cols-6 gap-3 flex-1">
+                {[
+                  { label: "PAC", value: auction.player.pace },
+                  { label: "SHO", value: auction.player.shooting },
+                  { label: "PAS", value: auction.player.passing },
+                  { label: "DEF", value: auction.player.defending },
+                  { label: "PHY", value: auction.player.physicality },
+                  { label: "POT", value: auction.player.potential },
+                ].map(({ label, value }) => (
+                  <div key={label} className="text-center">
+                    <p className="text-[10px] text-gray-500 uppercase">{label}</p>
+                    <p className={cn(
+                      "text-sm font-bold",
+                      value >= 80 ? "text-green-400" : value >= 65 ? "text-blue-400" : "text-gray-300"
+                    )}>
+                      {value}
+                    </p>
+                    <div className="w-full bg-gray-700 rounded-full h-1 mt-0.5">
+                      <div
+                        className={cn(
+                          "h-1 rounded-full",
+                          value >= 80 ? "bg-green-400" : value >= 65 ? "bg-blue-400" : "bg-gray-400"
+                        )}
+                        style={{ width: `${value}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bid section */}
+              <div className="border-l border-gray-700 pl-4 min-w-[200px]">
+                <p className="text-xs text-gray-400 mb-2">
+                  Wage: <span className="text-white font-medium">€{auction.player.wage.toLocaleString()}/w</span>
+                </p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <label className="text-[10px] text-gray-500 block mb-0.5">Custom bid</label>
+                    <input
+                      type="number"
+                      value={customBid}
+                      onChange={(e) => setCustomBid(Number(e.target.value))}
+                      onClick={(e) => e.stopPropagation()}
+                      min={auction.minBid}
+                      step={1000}
+                      className="input-field text-sm w-full py-1.5"
+                    />
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onBid(auction.id, customBid, auction.player.wage);
+                    }}
+                    disabled={isBidding || customBid < auction.minBid}
+                    className="btn-primary text-xs mt-4 px-3 py-1.5"
+                  >
+                    Bid
+                  </button>
+                </div>
+                <div className="flex justify-between text-[10px] text-gray-600 mt-1">
+                  <span>Min: {formatMoney(auction.minBid)}</span>
+                  <span>Buy now: {formatMoney(auction.buyNow)}</span>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
+// ─── Main Page ──────────────────────────────────────────────
 
 export default function TransfersPage() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<"auction" | "market" | "offers" | "my-listings">("auction");
+  const [tab, setTab] = useState<"auction" | "market" | "offers">("auction");
   const [offerModal, setOfferModal] = useState<Listing | null>(null);
   const [offerFee, setOfferFee] = useState(0);
   const [offerWage, setOfferWage] = useState(0);
   const [posFilter, setPosFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [sortField, setSortField] = useState("deadline");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  const handleSort = useCallback(
+    (field: string) => {
+      if (sortField === field) {
+        setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+      } else {
+        setSortField(field);
+        setSortOrder(field === "overall" || field === "price" ? "desc" : "asc");
+      }
+    },
+    [sortField]
+  );
 
   // Auction market (auto-refreshes every 10s)
-  const { data: auctionData } = useQuery<{ auctions: AuctionItem[]; total: number }>({
-    queryKey: ["auction-market", posFilter],
+  const { data: auctionData, isLoading: auctionLoading } = useQuery<{ auctions: AuctionItem[]; total: number }>({
+    queryKey: ["auction-market", posFilter, sortField, sortOrder],
     queryFn: () => {
-      const params = new URLSearchParams({ pageSize: "100" });
+      const params = new URLSearchParams({ pageSize: "100", sort: sortField, order: sortOrder });
       if (posFilter !== "all") params.set("position", posFilter);
       return fetch(`/api/transfers/auction?${params}`).then((r) => r.json());
     },
     refetchInterval: 10000,
   });
+
+  // Filter locally by search query
+  const filteredAuctions = (auctionData?.auctions ?? []).filter((a) =>
+    searchQuery ? a.player.name.toLowerCase().includes(searchQuery.toLowerCase()) : true
+  );
 
   // Traditional market
   const { data: market } = useQuery<{ listings: Listing[]; total: number }>({
@@ -249,23 +440,21 @@ export default function TransfersPage() {
     enabled: tab === "offers",
   });
 
-  // Bid on auction
+  // Bid mutation
   const placeBid = useMutation({
-    mutationFn: async ({ listingId, bidAmount, offerWage }: { listingId: string; bidAmount: number; offerWage: number }) => {
+    mutationFn: async ({ listingId, bidAmount, offerWage: wage }: { listingId: string; bidAmount: number; offerWage: number }) => {
       const res = await fetch("/api/transfers/auction", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId, bidAmount, offerWage }),
+        body: JSON.stringify({ listingId, bidAmount, offerWage: wage }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["auction-market"] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["auction-market"] }),
   });
 
-  // Submit traditional offer
+  // Submit offer mutation
   const submitOffer = useMutation({
     mutationFn: async () => {
       const res = await fetch("/api/transfers/offers", {
@@ -302,28 +491,39 @@ export default function TransfersPage() {
     placeBid.mutate({ listingId: auctionId, bidAmount: amount, offerWage: wage });
   }
 
+  function toggleExpand(id: string) {
+    setExpandedRow((prev) => (prev === id ? null : id));
+  }
+
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Transfer Market</h1>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Transfers</h1>
+        <span className="text-xs text-gray-500">
+          {auctionData?.total ?? 0} players on market
+        </span>
+      </div>
 
-      <div className="flex gap-2">
-        {(["auction", "market", "offers", "my-listings"] as const).map((t) => (
+      {/* Tabs */}
+      <div className="flex border-b border-gray-800">
+        {([
+          { key: "auction" as const, label: "Auctions", icon: Gavel },
+          { key: "market" as const, label: "Scouting", icon: Search },
+          { key: "offers" as const, label: "Offers", icon: Send },
+        ]).map(({ key, label, icon: Icon }) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={key}
+            onClick={() => setTab(key)}
             className={cn(
-              "px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize",
-              tab === t ? "bg-primary text-white" : "bg-panel text-gray-400"
+              "flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors -mb-px",
+              tab === key
+                ? "border-primary text-white"
+                : "border-transparent text-gray-500 hover:text-gray-300"
             )}
           >
-            {t === "auction" ? (
-              <span className="flex items-center gap-1.5">
-                <Gavel size={14} />
-                Auction
-              </span>
-            ) : (
-              t.replace("-", " ")
-            )}
+            <Icon size={14} />
+            {label}
           </button>
         ))}
       </div>
@@ -331,51 +531,114 @@ export default function TransfersPage() {
       {/* ─── Auction Tab ────────────────────────────────────── */}
       {tab === "auction" && (
         <div className="space-y-3">
-          {/* Position filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500">Filter:</span>
-            {["all", "GK", "DEF", "MID", "FWD"].map((pos) => (
-              <button
-                key={pos}
-                onClick={() => setPosFilter(pos)}
-                className={cn(
-                  "px-2 py-1 rounded text-xs font-medium",
-                  posFilter === pos ? "bg-primary text-white" : "bg-bg text-gray-400"
-                )}
-              >
-                {pos === "all" ? "All" : pos}
-              </button>
-            ))}
-            <span className="ml-auto text-xs text-gray-500">
-              {auctionData?.total ?? 0} players · Refreshes every 5 min
+          {/* Filters bar */}
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Position filter */}
+            <div className="flex items-center gap-1">
+              <ListFilter size={12} className="text-gray-500" />
+              {["all", "GK", "DEF", "MID", "FWD"].map((pos) => (
+                <button
+                  key={pos}
+                  onClick={() => setPosFilter(pos)}
+                  className={cn(
+                    "px-2.5 py-1 rounded text-xs font-medium transition-colors",
+                    posFilter === pos
+                      ? pos === "all"
+                        ? "bg-primary text-white"
+                        : POS_COLORS[pos]
+                      : "bg-gray-800 text-gray-400 hover:text-gray-200"
+                  )}
+                >
+                  {pos === "all" ? "All" : pos}
+                </button>
+              ))}
+            </div>
+
+            {/* Search */}
+            <div className="flex-1 max-w-xs relative">
+              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search player..."
+                className="input-field text-sm pl-8 py-1.5 w-full"
+              />
+            </div>
+
+            <span className="ml-auto text-[10px] text-gray-600">
+              Auto-refreshes · 5 min auction windows
             </span>
           </div>
 
+          {/* Status messages */}
           {placeBid.isError && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 text-sm text-red-400">
               {(placeBid.error as Error).message}
             </div>
           )}
-
           {placeBid.isSuccess && (
             <div className="bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-2 text-sm text-green-400">
               Bid placed successfully!
             </div>
           )}
 
-          {/* Auction listings */}
-          <div className="space-y-2">
-            {auctionData?.auctions?.map((auction) => (
-              <AuctionCard
-                key={auction.id}
-                auction={auction}
-                onBid={handleBid}
-                isBidding={placeBid.isPending}
-              />
-            ))}
-            {(!auctionData?.auctions || auctionData.auctions.length === 0) && (
-              <p className="text-gray-500 text-center py-8">
-                No auctions available. Market refreshes every 5 minutes.
+          {/* Auction Table */}
+          <div className="card p-0 overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-800 bg-gray-900/50">
+                  <th className="py-2.5 px-3 text-left">
+                    <SortHeader label="Name" field="name" currentSort={sortField} currentOrder={sortOrder} onSort={handleSort} />
+                  </th>
+                  <th className="py-2.5 px-2 text-left">
+                    <SortHeader label="Pos" field="position" currentSort={sortField} currentOrder={sortOrder} onSort={handleSort} />
+                  </th>
+                  <th className="py-2.5 px-2 text-center">
+                    <SortHeader label="Age" field="age" currentSort={sortField} currentOrder={sortOrder} onSort={handleSort} className="justify-center" />
+                  </th>
+                  <th className="py-2.5 px-2 text-center">
+                    <SortHeader label="OVR" field="overall" currentSort={sortField} currentOrder={sortOrder} onSort={handleSort} className="justify-center" />
+                  </th>
+                  <th className="py-2.5 px-2 text-left">
+                    <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-500">Qlty</span>
+                  </th>
+                  <th className="py-2.5 px-2 text-right">
+                    <SortHeader label="Value" field="price" currentSort={sortField} currentOrder={sortOrder} onSort={handleSort} className="justify-end" />
+                  </th>
+                  <th className="py-2.5 px-2 text-center">
+                    <SortHeader label="Deadline" field="deadline" currentSort={sortField} currentOrder={sortOrder} onSort={handleSort} className="justify-center" />
+                  </th>
+                  <th className="py-2.5 px-3 text-right">
+                    <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-500">Bid</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredAuctions.map((auction) => (
+                  <AuctionRow
+                    key={auction.id}
+                    auction={auction}
+                    onBid={handleBid}
+                    onExpand={toggleExpand}
+                    isExpanded={expandedRow === auction.id}
+                    isBidding={placeBid.isPending}
+                  />
+                ))}
+              </tbody>
+            </table>
+
+            {auctionLoading && (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
+              </div>
+            )}
+
+            {!auctionLoading && filteredAuctions.length === 0 && (
+              <p className="text-gray-500 text-center py-12 text-sm">
+                {searchQuery
+                  ? "No players match your search"
+                  : "No auctions available. Market refreshes every 5 minutes."}
               </p>
             )}
           </div>
@@ -385,114 +648,195 @@ export default function TransfersPage() {
       {/* ─── Traditional Market Tab ─────────────────────────── */}
       {tab === "market" && (
         <div className="space-y-2">
-          {market?.listings?.map((listing) => (
-            <div key={listing.id} className="card flex items-center gap-4">
-              <div className="flex-shrink-0 text-center">
-                <span className="text-xl font-bold text-primary">{listing.player.overall}</span>
-                <p className="text-xs text-gray-400">{listing.player.position}</p>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium">{listing.player.name}</p>
-                <p className="text-xs text-gray-400">
-                  {listing.player.nationality} · {listing.player.age}y · From {listing.sellerClub.name}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-accent font-bold">€{(listing.askingPrice / 1000).toFixed(0)}k</p>
-                <p className="text-xs text-gray-500">{listing._count.offers} offers</p>
-              </div>
-              <button
-                onClick={() => {
-                  setOfferModal(listing);
-                  setOfferFee(Math.round(listing.askingPrice * 0.9));
-                  setOfferWage(listing.player.wage);
-                }}
-                className="btn-primary text-sm"
-              >
-                Make Offer
-              </button>
+          {market?.listings && market.listings.length > 0 ? (
+            <div className="card p-0 overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-800 bg-gray-900/50">
+                    <th className="py-2.5 px-3 text-left text-[10px] uppercase tracking-wider font-semibold text-gray-500">Name</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] uppercase tracking-wider font-semibold text-gray-500">Pos</th>
+                    <th className="py-2.5 px-2 text-center text-[10px] uppercase tracking-wider font-semibold text-gray-500">Age</th>
+                    <th className="py-2.5 px-2 text-center text-[10px] uppercase tracking-wider font-semibold text-gray-500">OVR</th>
+                    <th className="py-2.5 px-2 text-left text-[10px] uppercase tracking-wider font-semibold text-gray-500">Club</th>
+                    <th className="py-2.5 px-2 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500">Price</th>
+                    <th className="py-2.5 px-2 text-center text-[10px] uppercase tracking-wider font-semibold text-gray-500">Offers</th>
+                    <th className="py-2.5 px-3 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {market.listings.map((listing) => (
+                    <tr key={listing.id} className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors">
+                      <td className="py-2.5 px-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-gray-500 w-5 text-center">
+                            {listing.player.nationality.slice(0, 3).toUpperCase()}
+                          </span>
+                          <span className="font-medium text-sm">{listing.player.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-2">
+                        <PositionBadge position={listing.player.position} />
+                      </td>
+                      <td className="py-2.5 px-2 text-center text-sm">{listing.player.age}</td>
+                      <td className="py-2.5 px-2 text-center">
+                        <OverallBadge overall={listing.player.overall} />
+                      </td>
+                      <td className="py-2.5 px-2 text-sm text-gray-400 truncate max-w-[120px]">
+                        {listing.sellerClub.name}
+                      </td>
+                      <td className="py-2.5 px-2 text-right">
+                        <span className="font-bold text-accent text-sm">{formatMoney(listing.askingPrice)}</span>
+                      </td>
+                      <td className="py-2.5 px-2 text-center text-xs text-gray-500">
+                        {listing._count.offers}
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <button
+                          onClick={() => {
+                            setOfferModal(listing);
+                            setOfferFee(Math.round(listing.askingPrice * 0.9));
+                            setOfferWage(listing.player.wage);
+                          }}
+                          className="btn-primary text-xs px-3 py-1.5 inline-flex items-center gap-1"
+                        >
+                          <ShoppingCart size={11} />
+                          Offer
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
-          {(!market?.listings || market.listings.length === 0) && (
-            <p className="text-gray-500 text-center py-8">No listings available</p>
+          ) : (
+            <p className="text-gray-500 text-center py-12 text-sm">No listings available</p>
           )}
         </div>
       )}
 
       {/* ─── Offers Tab ─────────────────────────────────────── */}
       {tab === "offers" && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Received Offers</h2>
-          {offers?.receivedOffers?.map((offer) => (
-            <div key={offer.id} className="card">
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <p className="font-medium">{offer.listing.player.name}</p>
-                  <p className="text-sm text-gray-400">
-                    From {offer.buyerClub?.name} · €{(offer.offerFee / 1000).toFixed(0)}k fee · €{offer.offerWage}/w wage
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => respondToOffer.mutate({ offerId: offer.id, action: "accept" })}
-                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm"
-                  >
-                    Accept
-                  </button>
-                  <button
-                    onClick={() => respondToOffer.mutate({ offerId: offer.id, action: "reject" })}
-                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm"
-                  >
-                    Reject
-                  </button>
-                </div>
+        <div className="space-y-6">
+          {/* Received */}
+          <div>
+            <h2 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+              <TrendingUp size={14} className="text-green-400" />
+              Received Offers
+            </h2>
+            {offers?.receivedOffers && offers.receivedOffers.length > 0 ? (
+              <div className="card p-0 overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-800 bg-gray-900/50">
+                      <th className="py-2 px-3 text-left text-[10px] uppercase tracking-wider font-semibold text-gray-500">Player</th>
+                      <th className="py-2 px-2 text-left text-[10px] uppercase tracking-wider font-semibold text-gray-500">From</th>
+                      <th className="py-2 px-2 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500">Fee</th>
+                      <th className="py-2 px-2 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500">Wage</th>
+                      <th className="py-2 px-3 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {offers.receivedOffers.map((offer) => (
+                      <tr key={offer.id} className="border-b border-gray-800/50">
+                        <td className="py-2.5 px-3 font-medium text-sm">{offer.listing.player.name}</td>
+                        <td className="py-2.5 px-2 text-sm text-gray-400">{offer.buyerClub?.name}</td>
+                        <td className="py-2.5 px-2 text-right font-bold text-accent text-sm">{formatMoney(offer.offerFee)}</td>
+                        <td className="py-2.5 px-2 text-right text-sm text-gray-300">€{offer.offerWage}/w</td>
+                        <td className="py-2.5 px-3 text-right">
+                          <div className="flex gap-1.5 justify-end">
+                            <button
+                              onClick={() => respondToOffer.mutate({ offerId: offer.id, action: "accept" })}
+                              className="bg-green-600 hover:bg-green-700 text-white px-2.5 py-1 rounded text-xs font-medium"
+                            >
+                              Accept
+                            </button>
+                            <button
+                              onClick={() => respondToOffer.mutate({ offerId: offer.id, action: "reject" })}
+                              className="bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded text-xs font-medium"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </div>
-          ))}
-          {(!offers?.receivedOffers || offers.receivedOffers.length === 0) && (
-            <p className="text-gray-500 text-sm">No offers received</p>
-          )}
+            ) : (
+              <p className="text-gray-600 text-sm pl-1">No offers received</p>
+            )}
+          </div>
 
-          <h2 className="text-lg font-semibold mt-6">Sent Offers</h2>
-          {offers?.sentOffers?.map((offer) => (
-            <div key={offer.id} className="card">
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <p className="font-medium">{offer.listing.player.name}</p>
-                  <p className="text-sm text-gray-400">
-                    €{(offer.offerFee / 1000).toFixed(0)}k offered · Status: {offer.status}
-                    {offer.counterFee && ` · Counter: €${(offer.counterFee / 1000).toFixed(0)}k`}
-                  </p>
-                </div>
+          {/* Sent */}
+          <div>
+            <h2 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+              <Send size={14} className="text-blue-400" />
+              Sent Offers
+            </h2>
+            {offers?.sentOffers && offers.sentOffers.length > 0 ? (
+              <div className="card p-0 overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-800 bg-gray-900/50">
+                      <th className="py-2 px-3 text-left text-[10px] uppercase tracking-wider font-semibold text-gray-500">Player</th>
+                      <th className="py-2 px-2 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500">Fee</th>
+                      <th className="py-2 px-2 text-center text-[10px] uppercase tracking-wider font-semibold text-gray-500">Status</th>
+                      <th className="py-2 px-3 text-right text-[10px] uppercase tracking-wider font-semibold text-gray-500">Counter</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {offers.sentOffers.map((offer) => (
+                      <tr key={offer.id} className="border-b border-gray-800/50">
+                        <td className="py-2.5 px-3 font-medium text-sm">{offer.listing.player.name}</td>
+                        <td className="py-2.5 px-2 text-right font-bold text-accent text-sm">{formatMoney(offer.offerFee)}</td>
+                        <td className="py-2.5 px-2 text-center">
+                          <span className={cn(
+                            "text-xs font-medium px-2 py-0.5 rounded",
+                            offer.status === "PENDING" && "bg-yellow-500/20 text-yellow-400",
+                            offer.status === "ACCEPTED" && "bg-green-500/20 text-green-400",
+                            offer.status === "REJECTED" && "bg-red-500/20 text-red-400",
+                            offer.status === "COUNTERED" && "bg-blue-500/20 text-blue-400",
+                          )}>
+                            {offer.status}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-right text-sm text-gray-400">
+                          {offer.counterFee ? formatMoney(offer.counterFee) : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </div>
-          ))}
-          {(!offers?.sentOffers || offers.sentOffers.length === 0) && (
-            <p className="text-gray-500 text-sm">No sent offers</p>
-          )}
+            ) : (
+              <p className="text-gray-600 text-sm pl-1">No sent offers</p>
+            )}
+          </div>
         </div>
       )}
 
-      {/* ─── My Listings Tab ────────────────────────────────── */}
-      {tab === "my-listings" && (
-        <p className="text-gray-500 text-center py-8">
-          List players from your Squad page
-        </p>
-      )}
-
-      {/* ─── Offer Modal ────────────────────────────────────── */}
+      {/* ─── Offer Modal ──────────────────────────────────────── */}
       {offerModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="card max-w-md w-full space-y-4">
-            <h3 className="text-lg font-bold">
-              Make Offer for {offerModal.player.name}
-            </h3>
+            <div className="flex items-center gap-3">
+              <OverallBadge overall={offerModal.player.overall} />
+              <div>
+                <h3 className="text-lg font-bold">{offerModal.player.name}</h3>
+                <p className="text-xs text-gray-400">
+                  {offerModal.player.position} · {offerModal.player.age}y · {offerModal.player.nationality}
+                </p>
+              </div>
+            </div>
+
             <p className="text-sm text-gray-400">
-              Asking price: €{(offerModal.askingPrice / 1000).toFixed(0)}k
+              Asking: <span className="text-accent font-bold">{formatMoney(offerModal.askingPrice)}</span>
+              {" "}from {offerModal.sellerClub.name}
             </p>
 
             <div>
-              <label className="block text-sm text-gray-300 mb-1">Transfer Fee (€)</label>
+              <label className="block text-xs text-gray-500 mb-1">Transfer Fee</label>
               <input
                 type="number"
                 value={offerFee}
@@ -502,7 +846,7 @@ export default function TransfersPage() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-300 mb-1">Wage Offer (€/week)</label>
+              <label className="block text-xs text-gray-500 mb-1">Wage Offer (€/week)</label>
               <input
                 type="number"
                 value={offerWage}

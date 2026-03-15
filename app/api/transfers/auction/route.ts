@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { browseAuctionMarket, placeAuctionBid } from "@/server/transfers/auction";
+import {
+  browseAuctionMarket,
+  placeAuctionBid,
+  refreshAuctionMarket,
+  resolveExpiredAuctions,
+} from "@/server/transfers/auction";
 import type { Position } from "@prisma/client";
 
 export async function GET(req: Request) {
@@ -16,14 +21,33 @@ export async function GET(req: Request) {
     : undefined;
   const page = Number(searchParams.get("page") ?? 1);
   const pageSize = Number(searchParams.get("pageSize") ?? 20);
+  const sort = searchParams.get("sort") ?? undefined;
+  const order = searchParams.get("order") as "asc" | "desc" | undefined;
 
-  const result = await browseAuctionMarket({
+  // Auto-seed: resolve expired + refill if market is thin
+  let result = await browseAuctionMarket({
     position: position ?? undefined,
     minOverall,
     maxOverall,
     page,
     pageSize,
+    sort,
+    order,
   });
+
+  if (result.total < 10) {
+    await resolveExpiredAuctions();
+    await refreshAuctionMarket();
+    result = await browseAuctionMarket({
+      position: position ?? undefined,
+      minOverall,
+      maxOverall,
+      page,
+      pageSize,
+      sort,
+      order,
+    });
+  }
 
   return NextResponse.json(result);
 }
