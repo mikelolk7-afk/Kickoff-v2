@@ -1,11 +1,17 @@
-import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
-export async function GET() {
+/**
+ * Resolves the current user's club.
+ * Tries userId first, then falls back to clubId from the JWT session.
+ * If found by clubId but userId was missing on the club, re-links them.
+ *
+ * Returns { userId, club } or { userId: null, club: null } if unauthenticated.
+ */
+export async function getUserClub() {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return { userId: null, club: null } as const;
   }
 
   const userId = session.user.id;
@@ -19,19 +25,11 @@ export async function GET() {
     club = await db.club.findFirst({
       where: { id: clubId },
     });
+    // Re-link club to user if found by clubId but userId was missing
     if (club && !club.userId) {
       await db.club.update({ where: { id: club.id }, data: { userId } });
     }
   }
 
-  if (!club) {
-    return NextResponse.json({ error: "No club found" }, { status: 404 });
-  }
-
-  const players = await db.player.findMany({
-    where: { clubId: club.id },
-    orderBy: [{ position: "asc" }, { overall: "desc" }],
-  });
-
-  return NextResponse.json(players);
+  return { userId, club };
 }

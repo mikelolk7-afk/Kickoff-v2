@@ -59,7 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        token.sub = user.id;
         token.clubId = (user as { clubId?: string | null }).clubId ?? null;
         token.role = (user as { role?: string }).role ?? "user";
       }
@@ -67,7 +67,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
+        session.user.id = (token.sub ?? token.id) as string;
         (session.user as { clubId?: string | null }).clubId =
           token.clubId as string | null;
         (session.user as { role?: string }).role =

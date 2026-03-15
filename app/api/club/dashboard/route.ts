@@ -8,10 +8,25 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const club = await db.club.findFirst({
-    where: { userId: session.user.id },
+  const userId = session.user.id;
+  const clubId = (session.user as { clubId?: string | null }).clubId;
+
+  // Try finding club by userId first, then fall back to clubId from JWT
+  let club = await db.club.findFirst({
+    where: { userId },
     include: { division: true },
   });
+
+  if (!club && clubId) {
+    club = await db.club.findFirst({
+      where: { id: clubId },
+      include: { division: true },
+    });
+    // Re-link club to user if found by clubId but userId was missing
+    if (club && !club.userId) {
+      await db.club.update({ where: { id: club.id }, data: { userId } });
+    }
+  }
 
   if (!club) {
     return NextResponse.json({ error: "No club found" }, { status: 404 });
